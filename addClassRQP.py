@@ -1,12 +1,19 @@
 from sqlite3 import connect
+from tkinter.messagebox import QUESTION
 from pandas import read_sql
+
+#https://github.com/comp-data/2021-2022/blob/main/docs/handson/06/06-Interacting_with_databases_using_Pandas.ipynb
 
 class RelationQueryProcessor(RelationalProcessor):
     def __init__(self, dbPath):
         super().__init__(dbPath)
     
     def getPublicationsPublishedInYear(self, year):
-        pass
+        with connect(self.dbPath) as con:
+            query = "SELECT * FROM XXX WHERE publication_year = " + str(year) 
+                #per il FROM come faccio a capire qual è il nome del databse? 
+            df_sql = read_sql(query, con)
+            return df_sql
 
     """
     getPublicationsPublishedInYear: It returns a data frame with all the publications (i.e. the rows) that have been published in the input year (e.g. 2020).
@@ -14,7 +21,6 @@ class RelationQueryProcessor(RelationalProcessor):
 
     def getPublicationsByAuthorId(self, id):
         pass
-
     """
     getPublicationsByAuthorId: It returns a data frame with all the publications (i.e. the rows) that have been authored by the person having the identifier specified as input (e.g. "0000-0001-9857-1511").
     """
@@ -34,7 +40,11 @@ class RelationQueryProcessor(RelationalProcessor):
     """
 
     def getVenuesByPublisherId(self, id):
-        pass
+        with connect(self.dbPath) as con:
+            query = "SELECT * FROM XXX WHERE publisher = " + str(id) 
+                #per il FROM come faccio a capire qual è il nome del databse? 
+            df_sql = read_sql(query, con)
+            return df_sql
 
     """
     getVenuesByPublisherId: It returns a data frame with all the venues (i.e. the rows) that have been published by the organisation having the identifier specified as input (e.g. "crossref:78").
@@ -48,7 +58,11 @@ class RelationQueryProcessor(RelationalProcessor):
     """
 
     def getJournalArticlesInIssue(self, issue, volume, journalId):
-        pass
+        with connect(self.dbPath) as con:
+            query = "SELECT * FROM XXX WHERE type = journal-article AND issue = " + str(issue) + " AND volume = " + str(volume) # Manca journal ID ==> deve aprire anche il json
+                #per il FROM come faccio a capire qual è il nome del databse? 
+            df_sql = read_sql(query, con)
+            return df_sql
 
     """
     getJournalArticlesInIssue: It returns a data frame with all the journal articles (i.e. the rows) that have been included in the input issue (e.g. "9") of the input volume (e.g. "17") of the journal having the identifier specified as input (e.g. "issn:2164-5515").
@@ -63,7 +77,6 @@ class RelationQueryProcessor(RelationalProcessor):
 
     def getJournalArticlesInJournal(self, journalId):
         pass
-
     """
     getJournalArticlesInJournal: It returns a data frame with all the journal articles (i.e. the rows) that have been included, independently from the issue and the volume, in the journal having the identifier specified as input (e.g. "issn:2164-5515").
     """

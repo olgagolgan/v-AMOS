@@ -39,7 +39,6 @@ for doi in venues:
     #**** non è molto ma è un lavoro onesto, rr. 40-41
     if len(data_row) != 2: 
         data_row.append("NaN") 
-    #print(doi, " =====> ", data_row, len(data_row))
     for row in data_row: 
         rows_ven.append(row)
     for id in range(len(venues[doi])):

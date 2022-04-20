@@ -25,9 +25,13 @@ author_pubDB = df2.join(df1)
 
 """ 
 EXPORT & VISUALIZATION: 
+author_pubDB.to_csv(r'author_pubDB.csv')
+print(author_pubDB)
+
+=== only author (no doi) ===
+authorDB.to_csv(r'authorDB.csv')
 authorDB = df1.drop_duplicates(keep='first')
-author_pubDB.to_csv(r'author_pubDB.csv'); authorDB.to_csv(r'authorDB.csv')
-print(authorDB); print(author_pubDB)
+print(authorDB)
 """
 
 # ========== VENUES =======================  

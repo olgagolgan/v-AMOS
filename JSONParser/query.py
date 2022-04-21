@@ -17,4 +17,11 @@ def getPublicationsPublishedInYear(year):
         df_sql = read_sql(query, con)
         return df_sql
 
-print("First query", getPublicationsPublishedInYear("2020"))
+def getVenuesByPublisherId(id):
+    with connect("publications.db") as con:
+        query = "SELECT * FROM General WHERE publisher = '{0}'".format(id) 
+        df_sql = read_sql(query, con)
+        return df_sql
+
+print("1° query", getPublicationsPublishedInYear("2020"))
+print("2° query", getVenuesByPublisherId("crossref:78"))

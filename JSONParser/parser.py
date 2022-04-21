@@ -2,11 +2,10 @@ from json import load
 from csv import reader
 import pandas as pd
 
-with open("relational_publications.csv", "r", encoding="utf-8") as f:
-    publications = reader(f)
-
-with open("relationalJSON.json", "r", encoding="utf-8") as f:
+with open("JSONParser/relationalJSON.json", "r", encoding="utf-8") as f:
     json_doc = load(f)
+
+csvDB = pd.read_csv("JSONParser/relational_publications.csv")
 
 # ========== AUTHOR and PUBLICATION =======
 authors = json_doc['authors']
@@ -89,7 +88,7 @@ for cross_ref in publishers:
     rowsID.append(data_row["id"])
     rowsName.append(data_row["name"])
 data_tuples = list(zip(rowsID,rowsName))
-refDB = pd.DataFrame(data_tuples, columns=['id','name'])
+publisherDB = pd.DataFrame(data_tuples, columns=['id','name'])
 
 """
 EXPORT & VISUALIZATION: 

@@ -23,5 +23,5 @@ def getVenuesByPublisherId(id):
         df_sql = read_sql(query, con)
         return df_sql
 
-print("1° query", getPublicationsPublishedInYear("2020"))
-print("2° query", getVenuesByPublisherId("crossref:78"))
+print("1° query \n", getPublicationsPublishedInYear("2020"))
+print("2° query \n", getVenuesByPublisherId("crossref:78"))

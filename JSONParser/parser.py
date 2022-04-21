@@ -1,11 +1,12 @@
 from json import load
-from csv import reader
 import pandas as pd
+import sqlite3
 
 with open("JSONParser/relationalJSON.json", "r", encoding="utf-8") as f:
     json_doc = load(f)
 
-csvDB = pd.read_csv("JSONParser/relational_publications.csv")
+# ========== GENERAL =======
+csvDf = pd.read_csv("JSONParser/relational_publications.csv")
 
 # ========== AUTHOR and PUBLICATION =======
 authors = json_doc['authors']
@@ -16,21 +17,21 @@ for doi in authors:
     for row in data_row:
         rows_author.append(row)
     for id in range(len(authors[doi])):
-        row = [doi, id]
+        row = [doi, id+1]
         rows_first.append(row)
 df1 = pd.DataFrame(rows_author)
 df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "coauthor no."]
-author_pubDB = df2.join(df1)
+author_pubDf = df2.join(df1)
 
 """ 
 EXPORT & VISUALIZATION: 
-author_pubDB.to_csv(r'author_pubDB.csv')
-print(author_pubDB)
+author_pubDf.to_csv(r'author_pubDf.csv')
+print(author_pubDf)
 
 === only author (no doi) ===
-authorDB.to_csv(r'authorDB.csv')
-authorDB = df1.drop_duplicates(keep='first')
-print(authorDB)
+authorDf.to_csv(r'authorDf.csv')
+authorDf = df1.drop_duplicates(keep='first')
+print(authorDf)
 """
 
 # ========== VENUES =======================  
@@ -49,12 +50,12 @@ for doi in venues:
         rows_first.append(row)
 df1 = pd.DataFrame(rows_ven); df1.columns = ["id"]
 df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "id no."]
-venueDB = df2.join(df1)
+venueDf = df2.join(df1)
 
 """ 
 EXPORT & VISUALIZATION: 
-venueDB.to_csv(r'venueDB.csv')
-print(venueDB)
+venueDf.to_csv(r'venueDf.csv')
+print(venueDf)
 """
 
 # ========== REFERENCES ===================
@@ -70,12 +71,12 @@ for doi in references:
         rows_first.append(row)
 df1 = pd.DataFrame(rows_ref); df1.columns = ["doi mention"]
 df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "reference no."]
-refDB = df2.join(df1)
+refDf = df2.join(df1)
 
 """
 EXPORT & VISUALIZATION: 
-refDB.to_csv(r'refDB.csv')
-print(refDB)
+refDf.to_csv(r'refDf.csv')
+print(refDf)
 """
 
 # ========== PUBLISHERS ===================
@@ -88,10 +89,21 @@ for cross_ref in publishers:
     rowsID.append(data_row["id"])
     rowsName.append(data_row["name"])
 data_tuples = list(zip(rowsID,rowsName))
-publisherDB = pd.DataFrame(data_tuples, columns=['id','name'])
+publisherDf = pd.DataFrame(data_tuples, columns=['id','name'])
 
 """
 EXPORT & VISUALIZATION: 
-refDB.to_csv(r'refDB.csv')
-print(refDB)
+refDf.to_csv(r'refDf.csv')
+print(refDf)
 """
+
+def createDB():
+    with sqlite3.connect("publications.db") as con:
+        author_pubDf.to_sql("Author", con, if_exists="replace", index=False)
+        csvDf.to_sql("General", con, if_exists="replace", index=False)
+        venueDf.to_sql("Venues", con, if_exists="replace", index=False)
+        refDf.to_sql("References", con, if_exists="replace", index=False)
+        publisherDf.to_sql("Publishers", con, if_exists="replace", index=False)
+        con.commit
+
+temp = createDB()

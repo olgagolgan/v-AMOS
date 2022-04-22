@@ -40,13 +40,10 @@ rows_ven = []
 rows_first = []
 for doi in venues:
     data_row = venues[doi]
-    #**** streamline rr. 40-41 ===> prova a riassumere NaN in unica /// Also, ISSN anche più di 2!
-    if len(data_row) != 2: 
-        data_row.append("NaN") 
-    for row in data_row: 
-        rows_ven.append(row)
-    for id in range(len(venues[doi])):
-        row = [doi, id]
+    for idx, item_row in enumerate(data_row): 
+        rows_ven.append(item_row)
+        idno = idx + 1
+        row = [doi, idno]
         rows_first.append(row)
 df1 = pd.DataFrame(rows_ven); df1.columns = ["id"]
 df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "id no."]

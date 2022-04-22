@@ -1,0 +1,96 @@
+from json import load
+import pandas as pd
+import sqlite3
+from pprint import pprint
+# ===== TEMPORARY DRAFT =======
+
+with open("TempRelational/relationalJSON.json", "r", encoding="utf-8") as f:
+    json_doc = load(f)
+
+# ========== VENUES OLD=======================  
+venues = json_doc['venues_id']
+rows_ven = []
+rows_first = []
+for doi in venues:
+    data_row = venues[doi]
+    #**** streamline rr. 40-41 ===> prova a riassumere NaN in unica /// Also, ISSN anche più di 2!
+    if len(data_row) != 2: 
+        data_row.append("NaN") 
+    for row in data_row: 
+        rows_ven.append(row)
+    for id in range(len(venues[doi])):
+        row = [doi, id]
+        rows_first.append(row)
+df1 = pd.DataFrame(rows_ven); df1.columns = ["id"]
+df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "id no."]
+venueoldDf = df2.join(df1)
+print("Venueold\n", venueoldDf)
+
+# ========== VENUES =======================  
+venues = json_doc['venues_id']
+rows_ven = []
+rows_first = []
+#check = 0
+for doi in venues:
+    data_row = venues[doi]
+    #print("DATA ROW",data_row)
+    #check += len(data_row)
+    for idx, item_row in enumerate(data_row): 
+        #print("ITER IDX", idx)
+        #print("ITEM ROW", item_row)
+        rows_ven.append(item_row)
+        idno = idx + 1
+        row = [doi, idno]
+        rows_first.append(row)
+df1 = pd.DataFrame(rows_ven); df1.columns = ["id"]
+df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "id no."]
+venueDf = df2.join(df1)
+print("Venue\n", venueDf)
+"""
+print("\n===============")
+print("ROWS VEN\n", len(rows_ven), "\n") 
+pprint(rows_ven)
+print()
+print("ROWS 1st\n", len(rows_first), "\n")
+pprint(rows_first)
+"""
+#print(check)
+"""
+with open("TempRelational/relationalJSON.json", "r", encoding="utf-8") as f:
+    json_doc = load(f)
+
+# ========== VENUES =======================  
+venues = json_doc['venues_id']
+rows_ven = []
+rows_first = []
+for doi in venues:
+    data_row = venues[doi]
+    for row in data_row: 
+        rows_ven.append(row)
+        #pprint(rows_ven)
+    for row in data_row: 
+        for id in range(len(venues[doi])):
+                id += 1
+                row = [doi, id]
+                rows_first.append(row)
+
+df1 = pd.DataFrame(rows_ven); df1.columns = ["id"]
+df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "id no."]
+venueDf = df2.join(df1)
+print(len(df1))
+print(len(df2))
+print(len(venueDf))
+"""
+"""
+    #**** streamline rr. 40-41 ===> prova a riassumere NaN in unica /// Also, ISSN anche più di 2!
+    if len(data_row) != 2: 
+        data_row.append("NaN") 
+    
+
+    for id in range(len(venues[doi])):
+        row = [doi, id]
+        rows_first.append(row)
+df1 = pd.DataFrame(rows_ven); df1.columns = ["id"]
+df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "id no."]
+venueDf = df2.join(df1)
+"""

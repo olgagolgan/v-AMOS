@@ -40,7 +40,7 @@ rows_ven = []
 rows_first = []
 for doi in venues:
     data_row = venues[doi]
-    #**** non è molto ma è un lavoro onesto, rr. 40-41
+    #**** streamline rr. 40-41
     if len(data_row) != 2: 
         data_row.append("NaN") 
     for row in data_row: 
@@ -84,7 +84,7 @@ publishers = json_doc['publishers']
 rowsID = []
 rowsName = []
 for cross_ref in publishers:
-    #**** non è molto ma è un lavoro onesto, rr. 85-87
+    #**** streamline rr. 85-87
     data_row = publishers[cross_ref]
     rowsID.append(data_row["id"])
     rowsName.append(data_row["name"])

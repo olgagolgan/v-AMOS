@@ -40,7 +40,7 @@ rows_ven = []
 rows_first = []
 for doi in venues:
     data_row = venues[doi]
-    #**** streamline rr. 40-41
+    #**** streamline rr. 40-41 ===> prova a riassumere NaN in unica /// Also, ISSN anche più di 2!
     if len(data_row) != 2: 
         data_row.append("NaN") 
     for row in data_row: 

@@ -1,6 +1,8 @@
 #Additional Classes
-from sqlite3 import connect
+from json import load
+import pandas as pd
 from pandas import read_csv, read_json, Series
+from sqlite3 import connect
 from rdflib import Graph, URIRef, RDF, Literal
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
 from pathlib import Path
@@ -21,7 +23,7 @@ class RelationalProcessor:
         else:
             return False
             
-
+"""
 class RelationalDataProcessor(RelationalProcessor):
     def __init__(self, dbPath):
       super().__init__(dbPath)
@@ -43,7 +45,8 @@ class RelationalDataProcessor(RelationalProcessor):
             else:
                 return False
         else:
-            return False
+            return False         
+"""
 """
 PER FARLO ATTIVARE!!!           
 abc = RelationalProcessor.setDbPath(RelationalProcessor, "publication2.db")
@@ -124,13 +127,6 @@ class TriplestoreDataProcessor(TriplestoreProcessor):
             #
         else:
             return False
-
-
-
-
-
-
-
 
 
 #

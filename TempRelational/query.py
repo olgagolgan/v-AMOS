@@ -86,7 +86,7 @@ def getPublicationsByAuthorName(self, authorPartialName):
 
 def getDistinctPublisherOfPublications(self, pubIdList):
     with connect("publications.db") as con:
-        empty = DataFrame()
+        output = DataFrame()
         for el in pubIdList:
             query = "SELECT Publishers.id, Publishers.name FROM Publishers LEFT JOIN General ON Publishers.id == General.publisher WHERE General.id = '{0}'".format(el)
             df_sql = read_sql(query, con)
@@ -109,4 +109,4 @@ self = 0
 #print("10° query \n", getProceedingsByEvent(self, "web"))
 #print("11° query \n", getPublicationAuthors(self, "doi:10.1080/21645515.2021.1910000"))
 #print("12° query \n", getPublicationsByAuthorName(self, "iv"))                    
-#print("13° query \n", getDistinctPublisherOfPublications(self, ["doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035"])) #Non ha preso il primo doi                                     *
+#print("13° query \n", getDistinctPublisherOfPublications(self, ["doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035"]))

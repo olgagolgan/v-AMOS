@@ -1,4 +1,3 @@
-from numpy import empty
 from commitDB import *
 from pandas import DataFrame, read_sql
 from sqlite3 import connect
@@ -68,7 +67,7 @@ def getJournalArticlesInJournal(self, journalId):
 
 def getProceedingsByEvent(self, eventPartialName):
     with connect("publications.db") as con:
-        query = "SELECT * FROM General WHERE type = 'proceedings' AND event LIKE '%{0}%';".format(eventPartialName)
+        query = "SELECT * FROM General WHERE type = 'proceedings' AND event COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%';".format(eventPartialName)
         df_sql = read_sql(query, con)
         return df_sql
 
@@ -90,7 +89,7 @@ def getDistinctPublisherOfPublications(self, pubIdList):
         for el in pubIdList:
             query = "SELECT Publishers.id, Publishers.name FROM Publishers LEFT JOIN General ON Publishers.id == General.publisher WHERE General.id = '{0}'".format(el)
             df_sql = read_sql(query, con)
-            output = empty.append(df_sql)
+            output = pd.concat([output, df_sql])
         return output
     """
     getDistinctPublisherOfPublications: It returns a data frame with all the distinct publishers (i.e. the rows) that have published the venues of the publications with identifiers those specified as input (e.g. [ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]).

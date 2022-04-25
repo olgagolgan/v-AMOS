@@ -82,6 +82,7 @@ class RelationQueryProcessor(RelationalProcessor):
             query = "SELECT * FROM General LEFT JOIN Venues ON General.id==Venues.doi WHERE type = 'journal-article' AND volume ='{0}' AND Venues.id ='{1}';".format(volume, journalId)
             df_sql = read_sql(query, con)
             return df_sql
+        
     """
     getJournalArticlesInVolume: It returns a data frame with all the journal articles (i.e. the rows) that have been included, independently from the issue, in input volume (e.g. "17") of the journal having the identifier specified as input (e.g. "issn:2164-5515").
     """
@@ -91,6 +92,7 @@ class RelationQueryProcessor(RelationalProcessor):
             query = "SELECT * FROM General LEFT JOIN Venues ON General.id==Venues.doi WHERE type = 'journal-article' AND Venues.id ='{0}';".format(journalId)
             df_sql = read_sql(query, con)
             return df_sql
+        
     """
     getJournalArticlesInJournal: It returns a data frame with all the journal articles (i.e. the rows) that have been included, independently from the issue and the volume, in the journal having the identifier specified as input (e.g. "issn:2164-5515").
     """

@@ -1,10 +1,6 @@
-import csv
 from json import load
 from sqlite3 import connect
-from csv import reader
 import pandas as pd
-import sqlite3
-from pprint import pprint
 
 with open("TempRelational/relationalJSON.json", "r", encoding="utf-8") as f:
     jsonData = load(f)
@@ -60,7 +56,6 @@ for doi in references:
 citeDf = pd.DataFrame(datum, columns=["doi","cite"])
 journal_articles = journal_articles.merge(citeDf, how='left', left_on="id", right_on="doi") 
 journal_articles.drop(["doi"], axis = 1, inplace=True)
-journal_articles.to_csv(r'/Users/manuele/Desktop/journal_articles.csv')
 
 # ========= BOOK CHAPTER ============== 
 book_chapter = csvData.query("type == 'book-chapter'")
@@ -179,7 +174,7 @@ refDf.to_csv(r'/Users/manuele/Desktop/export/citations.csv')
 """
 
 def createDB():
-    with sqlite3.connect("TempRelational/publications.db") as con:
+    with connect("TempRelational/publications.db") as con:
         authorDf.to_sql("Author", con, if_exists="replace", index=False)
         publisherDf.to_sql("Publisher", con, if_exists="replace", index=False)
         journal_articles.to_sql("JournalArticles", con, if_exists="replace", index=False)
@@ -192,4 +187,3 @@ def createDB():
         con.commit()
 
 temp = createDB()
-

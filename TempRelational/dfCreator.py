@@ -1,5 +1,6 @@
 import csv
 from json import load
+from sqlite3 import connect
 from csv import reader
 import pandas as pd
 import sqlite3
@@ -150,9 +151,6 @@ proceedings.drop(["title","type","publication_year","issue","volume","chapter","
 proceedings = proceedings.merge(venuePub, how='left', left_on="id", right_on="doi") # Add venuesId
 proceedings.drop(["id","doi"], axis = 1, inplace=True)
 
-print(proceedings)
-proceedings.to_csv(r'/Users/manuele/Desktop/proceedings.csv')
-
 # ========== REFERENCES ===================
 references = jsonData['references']
 rows_ref = []
@@ -169,13 +167,29 @@ df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "reference no."]
 refDf = df2.join(df1)
 
 """
-authorDf.to_csv(r'/Users/manuele/Desktop/authorDf.csv')
-publisherDf.to_csv(r'/Users/manuele/Desktop/publisherDf.csv')
-journal_articles.to_csv(r'/Users/manuele/Desktop/journal_articles.csv')
-book_chapter.to_csv(r'/Users/manuele/Desktop/book_chapter.csv')
-proceedings_paper.to_csv(r'/Users/manuele/Desktop/proceedings_paper.csv')
-journal.to_csv(r'/Users/manuele/Desktop/journal.csv')
-book.to_csv(r'/Users/manuele/Desktop/book.csv')
-proceedings.to_csv(r'/Users/manuele/Desktop/proceedings.csv')
-refDf = df2.join(df1)
+authorDf.to_csv(r'/Users/manuele/Desktop/export/authorDf.csv')
+publisherDf.to_csv(r'/Users/manuele/Desktop/export/publisherDf.csv')
+journal_articles.to_csv(r'/Users/manuele/Desktop/export/journal_articles.csv')
+book_chapter.to_csv(r'/Users/manuele/Desktop/export/book_chapter.csv')
+proceedings_paper.to_csv(r'/Users/manuele/Desktop/export/proceedings_paper.csv')
+journal.to_csv(r'/Users/manuele/Desktop/export/journal.csv')
+book.to_csv(r'/Users/manuele/Desktop/export/book.csv')
+proceedings.to_csv(r'/Users/manuele/Desktop/export/proceedings.csv')
+refDf.to_csv(r'/Users/manuele/Desktop/export/citations.csv')
 """
+
+def createDB():
+    with sqlite3.connect("TempRelational/publications.db") as con:
+        authorDf.to_sql("Author", con, if_exists="replace", index=False)
+        publisherDf.to_sql("Publisher", con, if_exists="replace", index=False)
+        journal_articles.to_sql("JournalArticles", con, if_exists="replace", index=False)
+        book_chapter.to_sql("BookChapter", con, if_exists="replace", index=False)
+        proceedings_paper.to_sql("ProceedingsPaper", con, if_exists="replace", index=False)
+        journal.to_sql("Journal", con, if_exists="replace", index=False)
+        book.to_sql("Book", con, if_exists="replace", index=False)
+        proceedings.to_sql("Proceedings", con, if_exists="replace", index=False)
+        refDf.to_sql("Citations", con, if_exists="replace", index=False)
+        con.commit()
+
+temp = createDB()
+

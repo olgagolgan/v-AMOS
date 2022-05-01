@@ -25,7 +25,7 @@ def getPublicationsByAuthorId(self, id):
 
 def getMostCitedPublication(self):
     with connect("publications.db") as con:  
-        query = "NOT WORKING !!!;"
+        query = "SELECT doi mention, count(doi mention) as TotalRepetition FROM References GROUP BY doi mention"
         df_sql = read_sql(query, con)
         return df_sql
 
@@ -98,7 +98,7 @@ def getDistinctPublisherOfPublications(self, pubIdList):
 self = 0
 #print(" 1° query \n", getPublicationsPublishedInYear(self, "2020"))
 #print(" 2° query \n", getPublicationsByAuthorId(self, "0000-0003-0530-4305"))
-#print(" 3° query \n", getMostCitedPublication(self))                               * 
+print(" 3° query \n", getMostCitedPublication(self))                               #* 
 #print(" 4° query \n", getMostCitedVenue(self))                                     *
 #print(" 5° query \n", getVenuesByPublisherId(self, "crossref:78"))
 #print(" 6° query \n", getPublicationInVenue(self, "issn:0944-1344"))

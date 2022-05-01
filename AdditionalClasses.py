@@ -13,13 +13,13 @@ class RelationalProcessor:
     def __init__(self, dbPath):
         self.dbPath = dbPath
 
-    def getDbPath(self):  # not really sure about it
+    def getDbPath(self):  
         return self.dbPath
 
     def setDbPath(self, path):
         if path != '': 
             self.dbPath = path
-            return True  # I tried to handle the possibility of an error
+            return True 
         else:
             return False
             

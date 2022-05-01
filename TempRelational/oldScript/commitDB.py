@@ -48,7 +48,7 @@ for doi in venues:
 df1 = pd.DataFrame(rows_ven); df1.columns = ["id"]
 df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "id no."]
 venueDf = df2.join(df1)
-
+print(venueDf)
 """ 
 EXPORT & VISUALIZATION: 
 venueDf.to_csv(r'venueDf.csv')
@@ -81,7 +81,6 @@ publishers = json_doc['publishers']
 rowsID = []
 rowsName = []
 for cross_ref in publishers:
-    #**** streamline rr. 85-87
     data_row = publishers[cross_ref]
     rowsID.append(data_row["id"])
     rowsName.append(data_row["name"])
@@ -93,7 +92,7 @@ EXPORT & VISUALIZATION:
 refDf.to_csv(r'refDf.csv')
 print(refDf)
 """
-
+"""
 def createDB():
     with sqlite3.connect("publications.db") as con:
         author_pubDf.to_sql("Author", con, if_exists="replace", index=False)
@@ -104,3 +103,4 @@ def createDB():
         con.commit
 
 temp = createDB()
+"""

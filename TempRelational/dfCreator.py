@@ -1,5 +1,6 @@
 from json import load
 from sqlite3 import connect
+from pandas import read_sql, DataFrame
 import pandas as pd
 
 with open("TempRelational/relationalJSON.json", "r", encoding="utf-8") as f:
@@ -185,3 +186,15 @@ def createDB():
         con.commit()
 
 temp = createDB()
+
+self = 0
+def getDistinctPublisherOfPublications(self, pubIdList):
+        with connect("TempRelational/publications.db") as con:
+            output = DataFrame()
+            for el in pubIdList:
+                query = '''SELECT Journal.publisher FROM  JournalArticles LEFT JOIN Journal ON JournalArticles."issn/isbn" == Journal."issn/isbn" WHERE JournalArticles.id = "{0}" UNION SELECT Book.publisher FROM  BookChapter LEFT JOIN Book ON BookChapter."issn/isbn" == Book."issn/isbn" WHERE BookChapter.id = "{0}" UNION SELECT Proceedings.publisher FROM  ProceedingsPaper LEFT JOIN Proceedings ON ProceedingsPaper."issn/isbn" == Proceedings."issn/isbn" WHERE ProceedingsPaper.id = "{0}";'''.format(el)
+                df_sql = read_sql(query, con)
+                output = pd.concat([output, df_sql])
+            return output
+
+x = print(getDistinctPublisherOfPublications(self, [ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))

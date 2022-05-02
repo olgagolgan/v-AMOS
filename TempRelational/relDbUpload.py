@@ -37,16 +37,16 @@ class RelationalDataProcessor(RelationalProcessor):
 
             # ========= JOURNAL ARTICLE ==============
             journal_articles = csvData.query("type == 'journal-article'")
-            journal_articles.drop(["type", "chapter", "venue_type", "publisher", "event"], axis = 1, inplace=True)
+            journal_articles = journal_articles[["id","title","publication_year","issue","volume"]]
 
             # Add venuesId
             venues = jsonData['venues_id']
             datum = []
             for doi in venues:
-                datum.append([doi, venues[doi]])
+                datum.append([doi, str(venues[doi])])
             venuePub = pd.DataFrame(datum, columns=["doi","issn/isbn"])
-            journal_articles = journal_articles.merge(venuePub, how='left', left_on="id", right_on="doi") 
-            journal_articles.drop(["doi", "publication_venue"], axis = 1, inplace=True)
+            journal_articles = journal_articles.merge(venuePub, how='left', left_on="id", right_on="doi")
+            journal_articles = journal_articles[["id","title","publication_year","issue","volume", "issn/isbn"]] 
 
             #Add authors
             authors = jsonData['authors']
@@ -55,33 +55,33 @@ class RelationalDataProcessor(RelationalProcessor):
                 setOrcid = set()
                 for item in authors[doi]:
                     setOrcid.add(item['orcid'])
-                datum.append([doi, setOrcid])   
+                datum.append([doi, str(setOrcid)])   
             autOfPub = pd.DataFrame(datum, columns=["doi","orcid"])
             journal_articles = journal_articles.merge(autOfPub, how='left', left_on="id", right_on="doi") 
-            journal_articles.drop(["doi"], axis = 1, inplace=True) #ALL THE QUERY: id included 
+            journal_articles = journal_articles[["id","title","publication_year","issue","volume", "issn/isbn", "orcid"]] 
 
             #Add citation
             references = jsonData['references']
             datum = []
             for doi in references:
-                datum.append([doi,references[doi]])
+                datum.append([doi,str(references[doi])])
             citeDf = pd.DataFrame(datum, columns=["doi","cite"])
             journal_articles = journal_articles.merge(citeDf, how='left', left_on="id", right_on="doi") 
-            journal_articles.drop(["doi"], axis = 1, inplace=True)
-            journal_articles.to_csv(r'/Users/manuele/Desktop/journal_articles.csv')
+            journal_articles = journal_articles[["id","title","publication_year", "issue","volume", "issn/isbn", "orcid", "cite"]] 
+
 
             # ========= BOOK CHAPTER ============== 
             book_chapter = csvData.query("type == 'book-chapter'")
-            book_chapter.drop(["type", "issue", "volume", "venue_type", "publisher", "event"], axis = 1, inplace=True)
+            book_chapter = book_chapter[["id","title","publication_year", "chapter"]]
 
             # Add venuesId
             venues = jsonData['venues_id']
             datum = []
             for doi in venues:
-                datum.append([doi, venues[doi]])
+                datum.append([doi, str(venues[doi])])
             venuePub = pd.DataFrame(datum, columns=["doi","issn/isbn"])
             book_chapter = book_chapter.merge(venuePub, how='left', left_on="id", right_on="doi") 
-            book_chapter.drop(["doi", "publication_venue"], axis = 1, inplace=True)
+            book_chapter = book_chapter[["id","title","publication_year", "chapter", "issn/isbn"]]
 
             #Add authors
             authors = jsonData['authors']
@@ -90,32 +90,32 @@ class RelationalDataProcessor(RelationalProcessor):
                 setOrcid = set()
                 for item in authors[doi]:
                     setOrcid.add(item['orcid'])
-                datum.append([doi, setOrcid])    
+                datum.append([doi, str(setOrcid)])    
             autOfPub = pd.DataFrame(datum, columns=["doi","orcid"])
             book_chapter = book_chapter.merge(autOfPub, how='left', left_on="id", right_on="doi") 
-            book_chapter.drop(["doi"], axis = 1, inplace=True) #ALL THE QUERY: id included 
+            book_chapter = book_chapter[["id","title","publication_year", "chapter", "issn/isbn", "orcid"]]
 
             #Add citation
             references = jsonData['references']
             datum = []
             for doi in references:
-                datum.append([doi,references[doi]])
+                datum.append([doi,str(references[doi])])
             citeDf = pd.DataFrame(datum, columns=["doi","cite"])
             book_chapter = book_chapter.merge(citeDf, how='left', left_on="id", right_on="doi") 
-            book_chapter.drop(["doi"], axis = 1, inplace=True)
+            book_chapter = book_chapter[["id","title","publication_year", "chapter", "issn/isbn", "orcid", "cite"]]
 
             # ========= PROCEEDINGS-PAPER ============== 
             proceedings_paper = csvData.query("type == 'proceedings-paper'")
-            proceedings_paper.drop(["type", "issue", "volume", "chapter", "venue_type", "publisher", "event"], axis = 1, inplace=True)
+            proceedings_paper = proceedings_paper[["id","title","publication_year"]]
 
             # Add venuesId
             venues = jsonData['venues_id']
             datum = []
             for doi in venues:
-                datum.append([doi, venues[doi]])
+                datum.append([doi, str(venues[doi])])
             venuePub = pd.DataFrame(datum, columns=["doi","issn/isbn"])
             proceedings_paper = proceedings_paper.merge(venuePub, how='left', left_on="id", right_on="doi") 
-            proceedings_paper.drop(["doi", "publication_venue"], axis = 1, inplace=True)
+            proceedings_paper = proceedings_paper[["id","title","publication_year", "issn/isbn"]]
 
             #Add authors
             authors = jsonData['authors']
@@ -124,40 +124,37 @@ class RelationalDataProcessor(RelationalProcessor):
                 setOrcid = set()
                 for item in authors[doi]:
                     setOrcid.add(item['orcid'])
-                datum.append([doi, setOrcid])      
+                datum.append([doi, str(setOrcid)])      
             autOfPub = pd.DataFrame(datum, columns=["doi","orcid"])
             proceedings_paper = proceedings_paper.merge(autOfPub, how='left', left_on="id", right_on="doi") 
-            proceedings_paper.drop(["doi"], axis = 1, inplace=True) #ALL THE QUERY: id included 
+            proceedings_paper = proceedings_paper[["id","title","publication_year", "issn/isbn","orcid"]] #ALL THE QUERY: id included 
 
             #Add citation
             references = jsonData['references']
             datum = []
             for doi in references:
-                datum.append([doi,references[doi]])
+                datum.append([doi,str(references[doi])])
             citeDf = pd.DataFrame(datum, columns=["doi","cite"])
             proceedings_paper = proceedings_paper.merge(citeDf, how='left', left_on="id", right_on="doi") 
-            proceedings_paper.drop(["doi"], axis = 1, inplace=True)
+            proceedings_paper = proceedings_paper[["id","title","publication_year", "issn/isbn", "orcid", "cite"]]
 
             # ============= JOURNAL ===========
             journal = csvData.query("venue_type == 'journal'")
-            journal.drop(["title","type","publication_year","issue","volume","chapter","venue_type", "event"], axis = 1, inplace=True)
-
+            journal = journal[["id","publication_venue","publisher"]]
             journal = journal.merge(venuePub, how='left', left_on="id", right_on="doi") # Add venuesId
-            journal.drop(["id","doi"], axis = 1, inplace=True)
+            journal = journal[["publication_venue","issn/isbn","publisher"]]
 
             # ============= BOOK ===========
             book = csvData.query("venue_type == 'book'")
-            book.drop(["title","type","publication_year","issue","volume","chapter","venue_type", "event"], axis = 1, inplace=True)
-
+            book = book[["id","publication_venue","publisher"]]
             book = book.merge(venuePub, how='left', left_on="id", right_on="doi") # Add venuesId
-            book.drop(["id","doi"], axis = 1, inplace=True)
+            book = book[["publication_venue","issn/isbn","publisher"]]
 
             # ============= PROCEEDINGS ===========
             proceedings = csvData.query("venue_type == 'proceedings'")
-            proceedings.drop(["title","type","publication_year","issue","volume","chapter","venue_type"], axis = 1, inplace=True)
-
+            proceedings = proceedings[["id","publication_venue","publisher","event"]]
             proceedings = proceedings.merge(venuePub, how='left', left_on="id", right_on="doi") # Add venuesId
-            proceedings.drop(["id","doi"], axis = 1, inplace=True)
+            proceedings = proceedings[["publication_venue","issn/isbn","publisher","event"]]
 
             # ========== REFERENCES ===================
             references = jsonData['references']
@@ -185,10 +182,10 @@ class RelationalDataProcessor(RelationalProcessor):
                 proceedings.to_sql("Proceedings", con, if_exists="replace", index=False)
                 refDf.to_sql("Citations", con, if_exists="replace", index=False)
                 con.commit()
-            return True
+                return True
         else:
             return False
 
-        
+                    
 
 

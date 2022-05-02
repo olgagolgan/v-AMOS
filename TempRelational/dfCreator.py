@@ -196,5 +196,3 @@ def getDistinctPublisherOfPublications(self, pubIdList):
                 df_sql = read_sql(query, con)
                 output = pd.concat([output, df_sql])
             return output
-
-x = print(getDistinctPublisherOfPublications(self, [ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))

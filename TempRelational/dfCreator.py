@@ -3,10 +3,10 @@ from sqlite3 import connect
 from pandas import read_sql, DataFrame
 import pandas as pd
 
-with open("TempRelational/relationalJSON.json", "r", encoding="utf-8") as f:
+with open("data/relationalJSON.json", "r", encoding="utf-8") as f:
     jsonData = load(f)
 
-csvData = pd.read_csv("TempRelational/relational_publications.csv")
+csvData = pd.read_csv("data/relational_publications.csv")
 
 # ========== AUTHOR =======================
 authors = jsonData['authors']
@@ -173,7 +173,7 @@ refDf.to_csv(r'/Users/manuele/Desktop/export/citations.csv')
 """
 
 def createDB():
-    with connect("TempRelational/publications.db") as con:
+    with connect("data/publicationsRel.db") as con:
         authorDf.to_sql("Author", con, if_exists="replace", index=False)
         publisherDf.to_sql("Publisher", con, if_exists="replace", index=False)
         journal_articles.to_sql("JournalArticles", con, if_exists="replace", index=False)
@@ -184,5 +184,4 @@ def createDB():
         proceedings.to_sql("Proceedings", con, if_exists="replace", index=False)
         refDf.to_sql("Citations", con, if_exists="replace", index=False)
         con.commit()
-
 temp = createDB()

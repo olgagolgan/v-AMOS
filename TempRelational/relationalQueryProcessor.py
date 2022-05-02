@@ -151,9 +151,9 @@ class RelationQueryProcessor(RelationalProcessor):
     getDistinctPublisherOfPublications: It returns a data frame with all the distinct publishers (i.e. the rows) that have published the venues of the publications with identifiers those specified as input (e.g. [ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]).
     """
 
-relPro = RelationalProcessor("attempt0502_1743.db")
+relPro = RelationalProcessor("attempt0502.db")
 relProUp = RelationalDataProcessor(relPro)
-csv = relProUp.uploadData("TempRelational/relational_publications.csv")
-json = relProUp.uploadData("TempRelational/relationalJSON.json")
+csv = relProUp.uploadData("data/relational_publications.csv")
+json = relProUp.uploadData("data/relationalJSON.json")
 test = RelationQueryProcessor(relPro)
 q1 = test.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ])

@@ -85,7 +85,7 @@ class RelationalDataProcessor(RelationalProcessor):
 
                     with connect(self.dbPath) as con:
                         authorDf.to_sql("Author", con, if_exists="replace", index=False)
-                        autOfPub.to_sql("Author&Publication", con, if_exists="replace", index=False)        
+                        autOfPub.to_sql("AuthorAndPublication", con, if_exists="replace", index=False)        
                         publisherDf.to_sql("Publisher", con, if_exists="replace", index=False)
                         bibliographydDf.to_sql("CitationsListed", con, if_exists="replace", index=False)
                         citeDf.to_sql("CitationsCondensed", con, if_exists="replace", index=False)

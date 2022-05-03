@@ -4,162 +4,103 @@ from black import out
 from pandas import read_sql, DataFrame
 import pandas as pd
 
-with open("data/relationalJSON.json", "r", encoding="utf-8") as f:
-    jsonData = load(f)
+def testUpload(format):
+    if format == "json": 
+        with open("data/relationalJSON.json", "r", encoding="utf-8") as f:
+            jsonData = load(f)
+        # ========== AUTHOR =======================
+        authors = jsonData['authors']
+        datum = []
+        for doi in authors:
+            data_row = authors[doi]
+            for row in data_row:
+                datum.append(row)
+        authorDf = pd.DataFrame(datum)
+        
+        # =========== AUTHOR of PUB ================
 
-csvData = pd.read_csv("data/relational_publications.csv")
+        datum = []
+        for doi in authors:
+            setOrcid = set()
+            for item in authors[doi]:
+                setOrcid.add(item['orcid'])
+                datum.append([doi, str(setOrcid)])   
+        autOfPub = pd.DataFrame(datum, columns=["doi","orcid"])
 
-# ========== AUTHOR =======================
-authors = jsonData['authors']
-datum = []
-for doi in authors:
-    data_row = authors[doi]
-    for row in data_row:
-        datum.append(row)
-authorDf = pd.DataFrame(datum)
- 
-# ========== PUBLISHERS ===================
-publishers = jsonData['publishers']
-datum = []
-for cross_ref in publishers:
-    datum.append([publishers[cross_ref]['id'], publishers[cross_ref]['name']])
-publisherDf = pd.DataFrame(datum, columns=['id','name'])
+        # ========== PUBLISHERS ===================
+        publishers = jsonData['publishers']
+        datum = []
+        for cross_ref in publishers:
+            datum.append([publishers[cross_ref]['id'], publishers[cross_ref]['name']])
+        publisherDf = pd.DataFrame(datum, columns=['id','name'])
 
-# ========= JOURNAL ARTICLE ==============
-journal_articles = csvData.query("type == 'journal-article'")
-journal_articles = journal_articles[["id","title","publication_year","issue","volume"]]
+        # ========== REFERENCES SINGLE CELL ===================
+        references = jsonData['references']
+        rows_ref = []
+        rows_first = []
+        for doi in references:
+            data_row = references[doi]
+            for row in data_row:
+                rows_ref.append(row)
+            for id in range(len(references[doi])):
+                row = [doi, id]
+                rows_first.append(row)
+        df1 = pd.DataFrame(rows_ref); df1.columns = ["doi mention"]
+        df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "reference no."]
+        bibliographydDf = df2.join(df1)
 
-# Add venuesId
-venues = jsonData['venues_id']
-datum = []
-for doi in venues:
-    datum.append([doi, str(venues[doi])])
-venuePub = pd.DataFrame(datum, columns=["doi","issn/isbn"])
-journal_articles = journal_articles.merge(venuePub, how='left', left_on="id", right_on="doi")
-journal_articles = journal_articles[["id","title","publication_year","issue","volume", "issn/isbn"]] 
+        # ========= CITATION ============
+        references = jsonData['references']
+        datum = []
+        for doi in references:
+            datum.append([doi,str(references[doi])])
+            citeDf = pd.DataFrame(datum, columns=["doi","cite"])
 
-#Add authors
-authors = jsonData['authors']
-datum = []
-for doi in authors:
-    setOrcid = set()
-    for item in authors[doi]:
-        setOrcid.add(item['orcid'])
-    datum.append([doi, str(setOrcid)])   
-autOfPub = pd.DataFrame(datum, columns=["doi","orcid"])
-journal_articles = journal_articles.merge(autOfPub, how='left', left_on="id", right_on="doi") 
-journal_articles = journal_articles[["id","title","publication_year","issue","volume", "issn/isbn", "orcid"]] 
+        #========= VENUES ID ====================
 
-#Add citation
-references = jsonData['references']
-datum = []
-for doi in references:
-    datum.append([doi,str(references[doi])])
-citeDf = pd.DataFrame(datum, columns=["doi","cite"])
-journal_articles = journal_articles.merge(citeDf, how='left', left_on="id", right_on="doi") 
-journal_articles = journal_articles[["id","title","publication_year", "issue","volume", "issn/isbn", "orcid", "cite"]] 
+        venues = jsonData['venues_id']
+        datum = []
+        for doi in venues:
+            datum.append([doi, str(venues[doi])])
+        venuePub = pd.DataFrame(datum, columns=["doi","issn/isbn"])
 
+        with connect("data/publicationsRelTest2.db") as con:
+            authorDf.to_sql("Author", con, if_exists="replace", index=False)
+            autOfPub.to_sql("Author&Publication", con, if_exists="replace", index=False)        
+            publisherDf.to_sql("Publisher", con, if_exists="replace", index=False)
+            bibliographydDf.to_sql("CitationsListed", con, if_exists="replace", index=False)
+            citeDf.to_sql("CitationsCondensed", con, if_exists="replace", index=False)
+            venuePub.to_sql("Venues", con, if_exists="replace", index=False)
+            con.commit()
 
-# ========= BOOK CHAPTER ============== 
-book_chapter = csvData.query("type == 'book-chapter'")
-book_chapter = book_chapter[["id","title","publication_year", "chapter"]]
+        return True
 
-# Add venuesId
-venues = jsonData['venues_id']
-datum = []
-for doi in venues:
-    datum.append([doi, str(venues[doi])])
-venuePub = pd.DataFrame(datum, columns=["doi","issn/isbn"])
-book_chapter = book_chapter.merge(venuePub, how='left', left_on="id", right_on="doi") 
-book_chapter = book_chapter[["id","title","publication_year", "chapter", "issn/isbn"]]
+    elif format == "csv":
+        csvData = pd.read_csv("data/relational_publications.csv")
 
-#Add authors
-authors = jsonData['authors']
-datum = []
-for doi in authors:
-    setOrcid = set()
-    for item in authors[doi]:
-        setOrcid.add(item['orcid'])
-    datum.append([doi, str(setOrcid)])    
-autOfPub = pd.DataFrame(datum, columns=["doi","orcid"])
-book_chapter = book_chapter.merge(autOfPub, how='left', left_on="id", right_on="doi") 
-book_chapter = book_chapter[["id","title","publication_year", "chapter", "issn/isbn", "orcid"]]
+        # ========= JOURNAL ARTICLE ==============
+        journal_articles = csvData.query("type == 'journal-article'")
+        journal_articles = journal_articles[["id","title","publication_year","issue","volume", "publication_venue", "publisher"]]
+        print(journal_articles)
 
-#Add citation
-references = jsonData['references']
-datum = []
-for doi in references:
-    datum.append([doi,str(references[doi])])
-citeDf = pd.DataFrame(datum, columns=["doi","cite"])
-book_chapter = book_chapter.merge(citeDf, how='left', left_on="id", right_on="doi") 
-book_chapter = book_chapter[["id","title","publication_year", "chapter", "issn/isbn", "orcid", "cite"]]
+        # ========= BOOK CHAPTER ============== 
+        book_chapter = csvData.query("type == 'book-chapter'")
+        book_chapter = book_chapter[["id","title","publication_year","chapter", "publication_venue", "publisher"]]
 
-# ========= PROCEEDINGS-PAPER ============== 
-proceedings_paper = csvData.query("type == 'proceedings-paper'")
-proceedings_paper = proceedings_paper[["id","title","publication_year"]]
+        # ========= PROCEEDINGS-PAPER ============== 
+        proceedings_paper = csvData.query("type == 'proceedings-paper'")
+        proceedings_paper = proceedings_paper[["id","title","publication_year", "publication_venue", "publisher", "event"]]
 
-# Add venuesId
-venues = jsonData['venues_id']
-datum = []
-for doi in venues:
-    datum.append([doi, str(venues[doi])])
-venuePub = pd.DataFrame(datum, columns=["doi","issn/isbn"])
-proceedings_paper = proceedings_paper.merge(venuePub, how='left', left_on="id", right_on="doi") 
-proceedings_paper = proceedings_paper[["id","title","publication_year", "issn/isbn"]]
+        with connect("data/publicationsRelTest2.db") as con:
+            journal_articles.to_sql("JournalArticles", con, if_exists="replace", index=False)
+            book_chapter.to_sql("BookChapter", con, if_exists="replace", index=False)
+            proceedings_paper.to_sql("ProceedingsPaper", con, if_exists="replace", index=False)
+            con.commit()
+        return True
+    return "Check again file type"
 
-#Add authors
-authors = jsonData['authors']
-datum = []
-for doi in authors:
-    setOrcid = set()
-    for item in authors[doi]:
-        setOrcid.add(item['orcid'])
-    datum.append([doi, str(setOrcid)])      
-autOfPub = pd.DataFrame(datum, columns=["doi","orcid"])
-proceedings_paper = proceedings_paper.merge(autOfPub, how='left', left_on="id", right_on="doi") 
-proceedings_paper = proceedings_paper[["id","title","publication_year", "issn/isbn","orcid"]] #ALL THE QUERY: id included 
-
-#Add citation
-references = jsonData['references']
-datum = []
-for doi in references:
-    datum.append([doi,str(references[doi])])
-citeDf = pd.DataFrame(datum, columns=["doi","cite"])
-proceedings_paper = proceedings_paper.merge(citeDf, how='left', left_on="id", right_on="doi") 
-proceedings_paper = proceedings_paper[["id","title","publication_year", "issn/isbn", "orcid", "cite"]]
-
-# ============= JOURNAL ===========
-journal = csvData.query("venue_type == 'journal'")
-journal = journal[["id","publication_venue","publisher"]]
-journal = journal.merge(venuePub, how='left', left_on="id", right_on="doi") # Add venuesId
-journal = journal[["publication_venue","issn/isbn","publisher"]]
-
-# ============= BOOK ===========
-book = csvData.query("venue_type == 'book'")
-book = book[["id","publication_venue","publisher"]]
-book = book.merge(venuePub, how='left', left_on="id", right_on="doi") # Add venuesId
-book = book[["publication_venue","issn/isbn","publisher"]]
-
-# ============= PROCEEDINGS ===========
-proceedings = csvData.query("venue_type == 'proceedings'")
-proceedings = proceedings[["id","publication_venue","publisher","event"]]
-proceedings = proceedings.merge(venuePub, how='left', left_on="id", right_on="doi") # Add venuesId
-proceedings = proceedings[["publication_venue","issn/isbn","publisher","event"]]
-
-# ========== REFERENCES ===================
-references = jsonData['references']
-rows_ref = []
-rows_first = []
-for doi in references:
-    data_row = references[doi]
-    for row in data_row:
-        rows_ref.append(row)
-    for id in range(len(references[doi])):
-        row = [doi, id]
-        rows_first.append(row)
-df1 = pd.DataFrame(rows_ref); df1.columns = ["doi mention"]
-df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "reference no."]
-refDf = df2.join(df1)
+print(testUpload("json"))
+print(testUpload("csv"))
 
 """
 authorDf.to_csv(r'/Users/manuele/Desktop/export/authorDf.csv')
@@ -171,10 +112,10 @@ journal.to_csv(r'/Users/manuele/Desktop/export/journal.csv')
 book.to_csv(r'/Users/manuele/Desktop/export/book.csv')
 proceedings.to_csv(r'/Users/manuele/Desktop/export/proceedings.csv')
 refDf.to_csv(r'/Users/manuele/Desktop/export/citations.csv')
-"""
+
 
 def createDB():
-    with connect("data/publicationsRelTest.db") as con:
+    with connect("data/publicationsRelTest2.db") as con:
         authorDf.to_sql("Author", con, if_exists="replace", index=False)
         publisherDf.to_sql("Publisher", con, if_exists="replace", index=False)
         journal_articles.to_sql("JournalArticles", con, if_exists="replace", index=False)
@@ -186,28 +127,4 @@ def createDB():
         refDf.to_sql("Citations", con, if_exists="replace", index=False)
         con.commit()
 temp = createDB()
-
-
-def getMostCitedPublication(self):
-    with connect("data/publicationsRelTest.db") as con:  
-        query = """SELECT "doi mention", COUNT("doi mention") AS `value_occurrence` FROM Citations GROUP BY "doi mention" ORDER BY `value_occurrence` DESC LIMIT 1;"""
-        freqMat = read_sql(query, con)
-        freqMat = freqMat["doi mention"]
-        output = DataFrame()
-        for label, content in freqMat.iteritems():
-            query = """SELECT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles WHERE id = "{0}" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM BookChapter WHERE id = "{0}" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM ProceedingsPaper WHERE id = "{0}";""".format(content)
-            df_sql = read_sql(query, con)
-            output = pd.concat([output, df_sql])
-        return output
-
-def getMostCitedVenue(self):
-    mostCitVen = getMostCitedPublication(0)["issn/isbn"]
-    output = DataFrame()
-    with connect("data/publicationsRelTest.db") as con: 
-        for label, content in mostCitVen.iteritems():
-            query = """SELECT * FROM Journal WHERE "issn/isbn" = "{0}" UNION SELECT * FROM Book WHERE "issn/isbn" = "{0}" UNION SELECT publication_venue, "issn/isbn", "publisher" FROM Proceedings WHERE "issn/isbn" = "{0}";""".format(content)
-            df_sql = read_sql(query, con)
-            output = pd.concat([output, df_sql])
-        return output
-
-print(getMostCitedVenue(0))
+"""

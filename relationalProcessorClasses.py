@@ -22,8 +22,8 @@ class RelationalDataProcessor(RelationalProcessor):
       super().__init__(dbPath)
 
     def uploadData(self, path):
-        if path != '':            
-            if format == "json": 
+        if path != '': 
+            if  path.endswith(".json"):           
                 with open(path, "r", encoding="utf-8") as f:
                     jsonData = load(f)
 
@@ -91,10 +91,9 @@ class RelationalDataProcessor(RelationalProcessor):
                         citeDf.to_sql("CitationsCondensed", con, if_exists="replace", index=False)
                         venuePub.to_sql("Venues", con, if_exists="replace", index=False)
                         con.commit()
-
                     return True
-            elif format == "csv":
-                csvData = pd.read_csv("data/relational_publications.csv")
+            if  path.endswith(".csv"):                
+                csvData = pd.read_csv(path)
 
                 # ========= JOURNAL ARTICLE ==============
                 journal_articles = csvData.query("type == 'journal-article'")
@@ -116,9 +115,9 @@ class RelationalDataProcessor(RelationalProcessor):
                     con.commit()
                 return True
             else:
-                return False
+                return "False Format"
         else:
-            return False
+            return "False Path"
 
 class RelationalQueryProcessor(RelationalProcessor):
     def __init__(self, dbPath):
@@ -292,7 +291,7 @@ rel_dp = RelationalDataProcessor(rel_path)
 rel_dp.setDbPath(rel_path)
 rel_dp.uploadData("data/relational_publications.csv")
 rel_dp.uploadData("data/relationalJSON.json")
-print(rel_dp)
+print(rel_dp.uploadData("data/relationalJSON.json"))
 """
 rel_qp = RelationalQueryProcessor(rel_path)
 rel_qp.setDbPath(rel_path)

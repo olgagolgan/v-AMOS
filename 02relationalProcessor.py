@@ -26,8 +26,16 @@ class RelationalDataProcessor(RelationalProcessor):
             #with open(path, "r", encoding="utf-8") as f:
             #jsonfile = open(path, mode="r", encoding="utf-8")
             #jsonData = json.load(jsonfile)
-
-            jsonData = json.load(open(path, encoding='utf-8'))
+            
+            try:
+                with open(path, "r", encoding="utf") as data_file:
+                    jsonData = json.load(data_file)
+            except Exception as e:
+                print("Error: ", e, "\n")
+                with open(path, "r", encoding="utf-8-sig") as data_file:
+                    jsonData = json.load(data_file)
+            
+            #jsonData = json.load(open(path, encoding='utf-8'))
             csvData = pd.read_csv(path)
 
             # ========== AUTHOR =======================
@@ -223,19 +231,29 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getMostCitedPublication(self):
         with connect(self.dbPath) as con:  
-            query = "NOT WORKING !!!;"
-            df_sql = read_sql(query, con)
-            return df_sql
+            query = """SELECT "doi mention", COUNT("doi mention") AS `value_occurrence` FROM Citations GROUP BY "doi mention" ORDER BY `value_occurrence` DESC LIMIT 1;"""
+            freqMat = read_sql(query, con)
+            freqMat = freqMat["doi mention"]
+            output = DataFrame()
+            for label, content in freqMat.iteritems():
+                query = """SELECT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles WHERE id = "{0}" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM BookChapter WHERE id = "{0}" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM ProceedingsPaper WHERE id = "{0}";""".format(content)
+                df_sql = read_sql(query, con)
+                output = pd.concat([output, df_sql])
+            return output
 
     """
     getMostCitedPublication: It returns a data frame with all the publications (i.e. the rows) that have received the most number of citations by other publications.
     """
 
     def getMostCitedVenue(self):
-        with connect(self.dbPath) as con:  
-            query = "NOT WORKING !!!;"
-            df_sql = read_sql(query, con)
-            return df_sql
+        mostCitVen = getMostCitedPublication()["issn/isbn"]
+        output = DataFrame()
+        with connect("data/publicationsRelTest.db") as con: 
+            for label, content in mostCitVen.iteritems():
+                query = """SELECT * FROM Journal WHERE "issn/isbn" = "{0}" UNION SELECT * FROM Book WHERE "issn/isbn" = "{0}" UNION SELECT publication_venue, "issn/isbn", "publisher" FROM Proceedings WHERE "issn/isbn" = "{0}";""".format(content)
+                df_sql = read_sql(query, con)
+                output = pd.concat([output, df_sql])
+            return output
 
     """
     getMostCitedVenue: It returns a data frame with all the venues (i.e. the rows) containing the publications that, overall, have received the most number of citations by other publications.
@@ -354,11 +372,11 @@ class RelationalQueryProcessor(RelationalProcessor):
     getDistinctPublisherOfPublications: It returns a data frame with all the distinct publishers (i.e. the rows) that have published the venues of the publications with identifiers those specified as input (e.g. [ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]).
     """
 
-rel_path = "publication.db"
+rel_path = "publicationRelDB.db"
 rel_dp = RelationalDataProcessor(rel_path)
 rel_dp.setDbPath(rel_path)
-rel_dp.uploadData("relational_publications.csv")
-rel_dp.uploadData("relationalJSON.json")
+rel_dp.uploadData("data/relational_publications.csv")
+rel_dp.uploadData("data/relationalJSON.json")
 rel_qp = RelationalQueryProcessor(rel_path)
 rel_qp.setDbPath(rel_path)
 question = rel_qp.getPublicationsByAuthorId("0000-0001-9857-1511")

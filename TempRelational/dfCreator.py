@@ -1,5 +1,6 @@
 from json import load
 from sqlite3 import connect
+from black import out
 from pandas import read_sql, DataFrame
 import pandas as pd
 
@@ -173,7 +174,7 @@ refDf.to_csv(r'/Users/manuele/Desktop/export/citations.csv')
 """
 
 def createDB():
-    with connect("data/publicationsRel.db") as con:
+    with connect("data/publicationsRelTest.db") as con:
         authorDf.to_sql("Author", con, if_exists="replace", index=False)
         publisherDf.to_sql("Publisher", con, if_exists="replace", index=False)
         journal_articles.to_sql("JournalArticles", con, if_exists="replace", index=False)
@@ -185,3 +186,34 @@ def createDB():
         refDf.to_sql("Citations", con, if_exists="replace", index=False)
         con.commit()
 temp = createDB()
+
+
+""" 
+====> DA ELEMINARE DOPO RICEVIMENTO
+def getMostCitedPublication(self):
+    with connect("data/publicationsRelTest.db") as con:  
+        query = """#SELECT "doi mention", COUNT("doi mention") AS `value_occurrence` FROM Citations GROUP BY "doi mention" ORDER BY `value_occurrence` DESC LIMIT 1;"""
+        """
+        freqMat = read_sql(query, con)
+        freqMat = freqMat["doi mention"]
+        output = DataFrame()
+        for label, content in freqMat.iteritems():
+            query = """#SELECT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles WHERE id = "{0}" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM BookChapter WHERE id = "{0}" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM ProceedingsPaper WHERE id = "{0}";""".format(content)
+            """
+            df_sql = read_sql(query, con)
+            output = pd.concat([output, df_sql])
+        return output
+
+def getMostCitedVenue(self):
+    mostCitVen = getMostCitedPublication(0)["issn/isbn"]
+    output = DataFrame()
+    with connect("data/publicationsRelTest.db") as con: 
+        for label, content in mostCitVen.iteritems():
+            query = """#SELECT * FROM Journal WHERE "issn/isbn" = "{0}" UNION SELECT * FROM Book WHERE "issn/isbn" = "{0}" UNION SELECT publication_venue, "issn/isbn", "publisher" FROM Proceedings WHERE "issn/isbn" = "{0}";""".format(content)
+            """
+            df_sql = read_sql(query, con)
+            output = pd.concat([output, df_sql])
+        return output
+
+print(getMostCitedVenue(0))
+"""

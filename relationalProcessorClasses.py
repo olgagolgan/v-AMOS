@@ -98,15 +98,17 @@ class RelationalDataProcessor(RelationalProcessor):
                 # ========= JOURNAL ARTICLE ==============
                 journal_articles = csvData.query("type == 'journal-article'")
                 journal_articles = journal_articles[["id","title","publication_year","issue","volume", "publication_venue", "publisher"]]
-                print(journal_articles)
+                journal_articles.rename(columns = {'id':'doi'}, inplace = True)
 
                 # ========= BOOK CHAPTER ============== 
                 book_chapter = csvData.query("type == 'book-chapter'")
                 book_chapter = book_chapter[["id","title","publication_year","chapter", "publication_venue", "publisher"]]
+                book_chapter.rename(columns = {'id':'doi'}, inplace = True)
 
                 # ========= PROCEEDINGS-PAPER ============== 
                 proceedings_paper = csvData.query("type == 'proceedings-paper'")
                 proceedings_paper = proceedings_paper[["id","title","publication_year", "publication_venue", "publisher", "event"]]
+                proceedings_paper.rename(columns = {'id':'doi'}, inplace = True)
 
                 with connect(self.dbPath) as con:
                     journal_articles.to_sql("JournalArticles", con, if_exists="replace", index=False)

@@ -46,11 +46,9 @@ class GenericQueryProcessor:
                familyName = row["family"]
                author = Person(orcid, givenName, familyName)
                authors_list.append(author)
-               
-
            
-           pub = Publication(identifier, publicationYear, title, cited, authors_list, publicationVenue)
-           final_list.append(pub)
+            pub = Publication(identifier, publicationYear, title, cited, authors_list, publicationVenue)
+            final_list.append(pub)
 
         # return df_union_sorted
 

@@ -40,11 +40,18 @@ class RelationalDataProcessor(RelationalProcessor):
 
                     datum = []
                     for doi in authors:
+                        infoList = authors[doi]
+                        #pprint(infoList)
+                        setInfo = set()
                         setOrcid = set()
-                        for item in authors[doi]:
-                            setOrcid.add(item['orcid'])
-                        datum.append([doi, str(setOrcid)])   
-                    autOfPub = pd.DataFrame(datum, columns=["doi","orcid"])
+                        for dict in infoList:
+                            personalData = []
+                            setOrcid.add(dict["orcid"])
+                            for key in dict:
+                                personalData.append(dict[key])
+                            setInfo.add(str(personalData))
+                        datum.append([doi, str(setOrcid), str(setInfo)])
+                    autOfPub = pd.DataFrame(datum, columns=["doi","orcid","info"])
 
                     # ========== PUBLISHERS ===================
                     publishers = jsonData['publishers']
@@ -111,6 +118,7 @@ class RelationalDataProcessor(RelationalProcessor):
                 proceedings_paper.rename(columns = {'id':'doi'}, inplace = True)
 
                 with connect(self.dbPath) as con:
+                    csvData.to_sql("GeneralPublication", con, if_exists="replace", index=False)
                     journal_articles.to_sql("JournalArticles", con, if_exists="replace", index=False)
                     book_chapter.to_sql("BookChapter", con, if_exists="replace", index=False)
                     proceedings_paper.to_sql("ProceedingsPaper", con, if_exists="replace", index=False)
@@ -410,12 +418,11 @@ class RelationalQueryProcessor(RelationalProcessor):
 rel_path = "vAMOSotraVez.db"
 rel_dp = RelationalDataProcessor(rel_path)
 rel_dp.setDbPath(rel_path)
-# rel_dp.uploadData("data/relational_publications.csv")
-# rel_dp.uploadData("data/relationalJSON.json")
-# print(rel_dp.uploadData("data/relationalJSON.json"))
+rel_dp.uploadData("data/relational_publications.csv")
+rel_dp.uploadData("data/relationalJSON.json")
 rel_qp = RelationalQueryProcessor(rel_path)
 rel_qp.setDbPath(rel_path)
-
+"""
 print("1) getPublicationsPublishedInYear:\n",rel_qp.getPublicationsPublishedInYear(2020))
 print("-----------------")
 print("2) getPublicationsByAuthorId:\n",rel_qp.getPublicationsByAuthorId("0000-0001-9857-1511"))
@@ -441,4 +448,4 @@ print("-----------------")
 print("12) getPublicationsByAuthorName:\n", rel_qp.getPublicationsByAuthorName("iv"))
 print("-----------------")
 print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
-print("-----------------")
+"""

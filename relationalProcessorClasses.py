@@ -151,21 +151,22 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getPublicationsByAuthorId(self, id):
         with connect(self.dbPath) as con:  
-            query = """SELECT JournalArticles.doi, title, publication_year, orcid, "issn/isbn", publisher 
+            query = """
+            SELECT JournalArticles.doi, title, publication_year, orcid, "issn/isbn", publisher 
             FROM JournalArticles 
             LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
             LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
-            WHERE orcid like  "%'{0}'%
+            WHERE orcid like  '%{0}%'
             UNION  SELECT BookChapter.doi, title, publication_year, orcid, "issn/isbn", publisher 
             FROM BookChapter
             LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == BookChapter.doi
             LEFT JOIN Venues ON Venues.doi == BookChapter.doi
-            WHERE orcid like  "%'{0}'%"
+            WHERE orcid like  '%{0}%'
             UNION SELECT ProceedingsPaper.doi, title, publication_year, orcid, "issn/isbn", publisher 
             FROM ProceedingsPaper
             LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == ProceedingsPaper.doi
             LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
-            WHERE orcid like  "%'{0}'%""".format(id)
+            WHERE orcid like  '%{0}%' """.format(id)
             df_sql = read_sql(query, con)
             return df_sql
 
@@ -184,34 +185,50 @@ class RelationalQueryProcessor(RelationalProcessor):
             ORDER BY MostCited DESC
             LIMIT 1"""
             freqMat = read_sql(query, con)
-            freqMat = freqMat["doi mention"]
-            return freqMat
+            #freqMat = freqMat["doi mention"] With this instruction the method doesn't return the MostCited column
+        return freqMat
 
     """
     getMostCitedPublication: It returns a data frame with all the publications (i.e. the rows) that have received the most number of citations by other publications.
     """
 
-    def getMostCitedVenue(self):
+    def getMostCitedVenue(self): 
         mostCitPub = RelationalQueryProcessor.getMostCitedPublication(self)
         with connect(self.dbPath) as con: 
-            for label, content in mostCitPub.iteritems():
-                query = """SELECT publication_venue, "issn/isbn", publisher 
-                FROM JournalArticles
-                LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
-                LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
-                WHERE JournalArticles.doi = "{0}"
-                UNION SELECT publication_venue, "issn/isbn", publisher 
+            for label, content in mostCitPub.iteritems(): #this works
+                query = """ 
+                SELECT Venues."issn/isbn", COUNT(CitationsListed."doi mention") as MostCited
                 FROM BookChapter 
-                LEFT JOIN Venues ON Venues.doi == BookChapter.doi
-                LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == BookChapter.doi
-                WHERE BookChapter.doi = "{0}"
-                UNION  SELECT publication_venue, "issn/isbn", publisher 
-                FROM ProceedingsPaper 
-                LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
-                LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == ProceedingsPaper.doi
-                WHERE ProceedingsPaper.doi = "{0}";""".format(content)
+                LEFT JOIN AuthorAndPublication ON BookChapter.doi = AuthorAndPublication.doi
+                LEFT JOIN Venues ON AuthorAndPublication.doi = Venues.doi
+                LEFT JOIN CitationsListed ON Venues.doi = CitationsListed."doi mention"
+                LEFT JOIN JournalArticles ON JournalArticles.doi = BookChapter.doi
+                LEFT JOIN ProceedingsPaper ON ProceedingsPaper.doi = Venues.doi
+                GROUP BY Venues."issn/isbn"
+                ORDER BY MostCited DESC
+                LIMIT 1              
+                """
+                
+                #???????
+                # query = """
+                # SELECT publication_venue, "issn/isbn", publisher 
+                # FROM JournalArticles
+                # LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
+                # LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
+                # WHERE JournalArticles.doi = '{0}'
+                # UNION SELECT publication_venue, "issn/isbn", publisher 
+                # FROM BookChapter 
+                # LEFT JOIN Venues ON Venues.doi == BookChapter.doi
+                # LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == BookChapter.doi
+                # WHERE BookChapter.doi = '{0}'
+                # UNION  SELECT publication_venue, "issn/isbn", publisher 
+                # FROM ProceedingsPaper 
+                # LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
+                # LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == ProceedingsPaper.doi
+                # WHERE ProceedingsPaper.doi = '{0}' """.format(content)
+                #It returns an Empty DataFrame
                 df_sql = read_sql(query, con)
-            return df_sql
+                return df_sql
 
     """
     getMostCitedVenue: It returns a data frame with all the venues (i.e. the rows) containing the publications that, overall, have received the most number of citations by other publications.
@@ -232,7 +249,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
             WHERE publisher="{0}";""".format(id)
             df_sql = read_sql(query, con)
-            return df_sql
+        return df_sql
     
     """
     getVenuesByPublisherId: It returns a data frame with all the venues (i.e. the rows) that have been published by the organisation having the identifier specified as input (e.g. "crossref:78").
@@ -257,7 +274,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             WHERE "issn/isbn" like  "%'{0}'%";
             """.format(venueId)
             df_sql = read_sql(query, con)
-            return df_sql
+        return df_sql
 
     """
     getPublicationInVenue: It returns a data frame with all the publications (i.e. the rows) that have been included in the venue having the identifier specified as input (e.g. "issn:0944-1344").
@@ -272,7 +289,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             WHERE issue = '{0}' AND volume = '{1}' AND "issn/isbn" like  "%'{2}'%";
             """.format(issue, volume, journalId)
             df_sql = read_sql(query, con)
-            return df_sql
+        return df_sql
 
     """
     getJournalArticlesInIssue: It returns a data frame with all the journal articles (i.e. the rows) that have been included in the input issue (e.g. "9") of the input volume (e.g. "17") of the journal having the identifier specified as input (e.g. "issn:2164-5515").
@@ -300,7 +317,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
             WHERE "issn/isbn" like  "%'{0}'%";""".format(journalId)            
             df_sql = read_sql(query, con)
-            return df_sql
+        return df_sql
         
     """
     getJournalArticlesInJournal: It returns a data frame with all the journal articles (i.e. the rows) that have been included, independently from the issue and the volume, in the journal having the identifier specified as input (e.g. "issn:2164-5515").
@@ -411,10 +428,10 @@ class RelationalQueryProcessor(RelationalProcessor):
 rel_path = "vAMOSotraVez.db"
 rel_dp = RelationalDataProcessor(rel_path)
 rel_dp.setDbPath(rel_path)
-rel_dp.uploadData("data/relational_publications.csv")
-rel_dp.uploadData("data/relationalJSON.json")
-print(rel_dp.uploadData("data/relationalJSON.json"))
+# rel_dp.uploadData("data/relational_publications.csv")
+# rel_dp.uploadData("data/relationalJSON.json")
+# print(rel_dp.uploadData("data/relationalJSON.json"))
 rel_qp = RelationalQueryProcessor(rel_path)
 rel_qp.setDbPath(rel_path)
-question = rel_qp.getPublicationAuthors("doi:10.1080/21645515.2021.1910000")
+question = rel_qp.getMostCitedVenue()
 print(question)

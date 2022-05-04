@@ -1,4 +1,4 @@
-from AdditionalClasses import *
+from dataModelClasses import *
 graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
 print(graph1.getEndPoint())
 graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")

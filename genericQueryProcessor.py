@@ -1,8 +1,7 @@
-from triplestoreProcessor import *
-from relationalProcessor import *
+from triplestoreProcessorClasses import *
+from relationalProcessorClasses import *
 from pandas import concat
-from dfCreator import *
-from DSclasses import *
+from dataModelClasses import *
 
 class GenericQueryProcessor:
     def __init__(self, queryProcessor):
@@ -29,18 +28,21 @@ class GenericQueryProcessor:
         df_union = concat([graph_year, rel_year], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         df_union_sorted = df_union_no_dupl.sort_values("publicationYear")
-        final_list = list()
-        for row_idx, row in df_union_sorted.iterrows():
-           identifier = row[id]
-           publicationYear = row[publication_year]
-           title = row[title]
-           cited = row[cite]
-           authors = set[Person(row[orcid], row[given], row[family])]
-           publicationVenue = row[publication_venue]
-           pub = Publication(identifier, publicationYear, title, cited, authors, publicationVenue)
-           final_list.append(pub)
-
         return df_union_sorted
+
+print(GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getPublicationsPublishedInYear("2014"))        
+        # final_list = list()
+        # for row_idx, row in df_union_sorted.iterrows():
+        #    identifier = row[id]
+        #    publicationYear = row[publication_year]
+        #    title = row[title]
+        #    cited = row[cite]
+        #    authors = set[Person(row[orcid], row[given], row[family])]
+        #    publicationVenue = row[publication_venue]
+        #    pub = Publication(identifier, publicationYear, title, cited, authors, publicationVenue)
+        #    final_list.append(pub)
+
+        # return df_union_sorted
 
 # def getPublicationsByAuthorId(self, year):
 #         graph_year = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationsPublishedInYear(year)

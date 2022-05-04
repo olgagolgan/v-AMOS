@@ -117,9 +117,9 @@ class RelationalDataProcessor(RelationalProcessor):
                     con.commit()
                 return True
             else:
-                return "False Format"
+                return False
         else:
-            return "False Path"
+            return False
 
 class RelationalQueryProcessor(RelationalProcessor):
     def __init__(self, dbPath):
@@ -208,25 +208,6 @@ class RelationalQueryProcessor(RelationalProcessor):
                 ORDER BY MostCited DESC
                 LIMIT 1              
                 """
-                
-                #???????
-                # query = """
-                # SELECT publication_venue, "issn/isbn", publisher 
-                # FROM JournalArticles
-                # LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
-                # LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
-                # WHERE JournalArticles.doi = '{0}'
-                # UNION SELECT publication_venue, "issn/isbn", publisher 
-                # FROM BookChapter 
-                # LEFT JOIN Venues ON Venues.doi == BookChapter.doi
-                # LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == BookChapter.doi
-                # WHERE BookChapter.doi = '{0}'
-                # UNION  SELECT publication_venue, "issn/isbn", publisher 
-                # FROM ProceedingsPaper 
-                # LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
-                # LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == ProceedingsPaper.doi
-                # WHERE ProceedingsPaper.doi = '{0}' """.format(content)
-                #It returns an Empty DataFrame
                 df_sql = read_sql(query, con)
                 return df_sql
 

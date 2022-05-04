@@ -185,6 +185,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                 }
                 GROUP BY ?orcid ?given ?family ?title ?id ?publication_venue ?publisher ?publication_year
                 ORDER BY DESC(?mostCited)
+                LIMIT 1
             """
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
@@ -192,16 +193,17 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getMostCitedVenue(self):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?publication_venue ?issn/isbn ?publisher ?title (COUNT(?cite) as ?mostCited)
+            SELECT ?publication_venue ?issn ?publisher ?title (COUNT(?cite) as ?mostCited)
             WHERE {
               ?s schema:isPartOf ?publication_venue.
               ?s schema:title ?title.
               ?s schema:publishedBy ?publisher.
-              ?s schema:VirtualLocation ?issn/isbn.
+              ?s schema:VirtualLocation ?issn.
               ?s schema:citation ?cite
             }
-            GROUP BY ?publication_venue ?issn/isbn ?title ?publisher
+            GROUP BY ?publication_venue ?issn ?title ?publisher
             ORDER BY DESC(?mostCited)
+            LIMIT 1
         """
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
@@ -209,7 +211,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getVenuesByPublisherId(self, id):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?title ?issn/isbn ?publisher ?name ?id
+            SELECT ?title ?issn ?publisher ?name ?id
             WHERE{
            {SELECT ?name ?id
             WHERE {
@@ -219,7 +221,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
             }
            }
            ?s schema:title ?title.
-           ?s schema:VirtualLocation ?issn/isbn.
+           ?s schema:VirtualLocation ?issn.
            ?s schema:publishedBy ?publisher
             }
         """
@@ -243,7 +245,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
               ?s schema:productID ?id.
               ?s schema:datePublished ?publication_year.
               ?s schema:isPartOf ?publication_venue.
-              ?s schema:VirtualLocation ?issn/isbn.
+              ?s schema:VirtualLocation ?issn.
               ?s schema:VirtualLocation '""" + str(venueId) + """'
                         }"""
 
@@ -332,7 +334,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
           SELECT ?title ?issn/isbn ?publisher
           WHERE {
               ?s schema:title ?title.
-              ?s schema:VirtualLocation ?issn/isbn.
+              ?s schema:VirtualLocation ?issn.
               ?s schema:publishedBy ?publisher.
               ?s schema:Event ?event.
               FILTER (REGEX(?event,'""" + str(eventPartialName) + """', "i"))

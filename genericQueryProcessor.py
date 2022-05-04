@@ -28,19 +28,29 @@ class GenericQueryProcessor:
         df_union = concat([graph_year, rel_year], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         df_union_sorted = df_union_no_dupl.sort_values("publicationYear")
-        return df_union_sorted
+        final_list = list()
 
-print(GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getPublicationsPublishedInYear("2014"))        
-        # final_list = list()
-        # for row_idx, row in df_union_sorted.iterrows():
-        #    identifier = row[id]
-        #    publicationYear = row[publication_year]
-        #    title = row[title]
-        #    cited = row[cite]
-        #    authors = set[Person(row[orcid], row[given], row[family])]
-        #    publicationVenue = row[publication_venue]
-        #    pub = Publication(identifier, publicationYear, title, cited, authors, publicationVenue)
-        #    final_list.append(pub)
+        for row_idx, row in df_union_sorted.iterrows():
+           identifier = row["id"]
+           publicationYear = row["publication_year"]
+           title = row["title"]
+           publisher = row["publisher"]
+           graph_au = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationAuthors(identifier)
+           rel_au = RelationalQueryProcessor("publicationsRelTest.db").getPublicationAuthors(identifier)  # gp back to the correct format
+           df_au = concat([graph_au, rel_au], ignore_index=True)
+           df_au_no_dupl = df_au.drop_duplicates()
+           authors_list = list()
+           for row_idx, row in df_au_no_dupl.iterrows():
+               orcid = row["orcid"]
+               givenName = row["given"]
+               familyName = row["family"]
+               author = Person(orcid, givenName, familyName)
+               authors_list.append(author)
+               
+
+           
+           pub = Publication(identifier, publicationYear, title, cited, authors_list, publicationVenue)
+           final_list.append(pub)
 
         # return df_union_sorted
 

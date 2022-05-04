@@ -43,7 +43,7 @@ class RelationalDataProcessor(RelationalProcessor):
                         setOrcid = set()
                         for item in authors[doi]:
                             setOrcid.add(item['orcid'])
-                            datum.append([doi, str(setOrcid)])   
+                        datum.append([doi, str(setOrcid)])   
                     autOfPub = pd.DataFrame(datum, columns=["doi","orcid"])
 
                     # ========== PUBLISHERS ===================
@@ -127,7 +127,21 @@ class RelationalQueryProcessor(RelationalProcessor):
     
     def getPublicationsPublishedInYear(self, year):
         with connect(self.dbPath) as con:  
-            query = '''SELECT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles WHERE publication_year = '{0}' UNION  SELECT id, title, publication_year, orcid, "issn/isbn" FROM BookChapter WHERE publication_year ='{0}' UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM ProceedingsPaper WHERE publication_year ='{0}';'''.format(year)
+            query = """ SELECT JournalArticles.doi, title, publication_year, orcid, "issn/isbn", publisher 
+            FROM JournalArticles 
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
+            LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
+            WHERE publication_year = '{0}' 
+            UNION  SELECT BookChapter.doi, title, publication_year, orcid, "issn/isbn", publisher 
+            FROM BookChapter
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == BookChapter.doi
+            LEFT JOIN Venues ON Venues.doi == BookChapter.doi
+            WHERE publication_year ='{0}' 
+            UNION SELECT ProceedingsPaper.doi, title, publication_year, orcid, "issn/isbn", publisher 
+            FROM ProceedingsPaper
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == ProceedingsPaper.doi
+            LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
+            WHERE publication_year ='{0}'; """.format(year)
             df_sql = read_sql(query, con)
             return df_sql
 
@@ -137,7 +151,21 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getPublicationsByAuthorId(self, id):
         with connect(self.dbPath) as con:  
-            query = '''SELECT  DISTINCT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles  WHERE orcid like  "%'{0}'%" UNION SELECT  DISTINCT id, title, publication_year, orcid, "issn/isbn" FROM BookChapter  WHERE orcid like  "%'{0}'%" UNION SELECT  DISTINCT id, title, publication_year, orcid, "issn/isbn" FROM ProceedingsPaper  WHERE orcid like  "%'{0}'%";'''.format(id)
+            query = """SELECT JournalArticles.doi, title, publication_year, orcid, "issn/isbn", publisher 
+            FROM JournalArticles 
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
+            LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
+            WHERE orcid like  "%'{0}'%
+            UNION  SELECT BookChapter.doi, title, publication_year, orcid, "issn/isbn", publisher 
+            FROM BookChapter
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == BookChapter.doi
+            LEFT JOIN Venues ON Venues.doi == BookChapter.doi
+            WHERE orcid like  "%'{0}'%"
+            UNION SELECT ProceedingsPaper.doi, title, publication_year, orcid, "issn/isbn", publisher 
+            FROM ProceedingsPaper
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == ProceedingsPaper.doi
+            LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
+            WHERE orcid like  "%'{0}'%""".format(id)
             df_sql = read_sql(query, con)
             return df_sql
 
@@ -147,29 +175,43 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getMostCitedPublication(self):
         with connect(self.dbPath) as con:  
-            query = """SELECT "doi mention", COUNT("doi mention") AS `value_occurrence` FROM Citations GROUP BY "doi mention" ORDER BY `value_occurrence` DESC LIMIT 1;"""
+            query = """
+            SELECT CitationsListed."doi mention", COUNT(CitationsListed."doi mention") as MostCited
+            FROM CitationsCondensed
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == CitationsCondensed.doi
+            LEFT JOIN CitationsListed ON CitationsListed.doi == AuthorAndPublication.doi
+            GROUP BY CitationsListed."doi mention"
+            ORDER BY MostCited DESC
+            LIMIT 1"""
             freqMat = read_sql(query, con)
             freqMat = freqMat["doi mention"]
-            output = DataFrame()
-            for label, content in freqMat.iteritems():
-                query = """SELECT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles WHERE id = "{0}" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM BookChapter WHERE id = "{0}" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM ProceedingsPaper WHERE id = "{0}";""".format(content)
-                df_sql = read_sql(query, con)
-                output = pd.concat([output, df_sql])
-            return output
+            return freqMat
 
     """
     getMostCitedPublication: It returns a data frame with all the publications (i.e. the rows) that have received the most number of citations by other publications.
     """
 
     def getMostCitedVenue(self):
-        mostCitVen = getMostCitedPublication()["issn/isbn"]
-        output = DataFrame()
-        with connect("data/publicationsRelTest.db") as con: 
-            for label, content in mostCitVen.iteritems():
-                query = """SELECT * FROM Journal WHERE "issn/isbn" = "{0}" UNION SELECT * FROM Book WHERE "issn/isbn" = "{0}" UNION SELECT publication_venue, "issn/isbn", "publisher" FROM Proceedings WHERE "issn/isbn" = "{0}";""".format(content)
+        mostCitPub = RelationalQueryProcessor.getMostCitedPublication(self)
+        with connect(self.dbPath) as con: 
+            for label, content in mostCitPub.iteritems():
+                query = """SELECT publication_venue, "issn/isbn", publisher 
+                FROM JournalArticles
+                LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
+                LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
+                WHERE JournalArticles.doi = "{0}"
+                UNION SELECT publication_venue, "issn/isbn", publisher 
+                FROM BookChapter 
+                LEFT JOIN Venues ON Venues.doi == BookChapter.doi
+                LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == BookChapter.doi
+                WHERE BookChapter.doi = "{0}"
+                UNION  SELECT publication_venue, "issn/isbn", publisher 
+                FROM ProceedingsPaper 
+                LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
+                LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == ProceedingsPaper.doi
+                WHERE ProceedingsPaper.doi = "{0}";""".format(content)
                 df_sql = read_sql(query, con)
-                output = pd.concat([output, df_sql])
-            return output
+            return df_sql
 
     """
     getMostCitedVenue: It returns a data frame with all the venues (i.e. the rows) containing the publications that, overall, have received the most number of citations by other publications.
@@ -177,7 +219,18 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getVenuesByPublisherId(self, id):
         with connect(self.dbPath) as con:
-            query = '''SELECT   "issn/isbn", publication_venue  FROM Journal WHERE publisher="{0}" UNION SELECT   "issn/isbn", publication_venue  FROM Book WHERE publisher="{0}" UNION  SELECT "issn/isbn", publication_venue  FROM Proceedings WHERE publisher="{0}";'''.format(id)
+            query = """SELECT "issn/isbn", publication_venue, publisher 
+            FROM JournalArticles
+            LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
+            WHERE publisher="{0}" 
+            UNION SELECT   "issn/isbn", publication_venue, publisher 
+            FROM BookChapter 
+            LEFT JOIN Venues ON Venues.doi == BookChapter.doi
+            WHERE publisher="{0}" 
+            UNION  SELECT  "issn/isbn", publication_venue, publisher  
+            FROM ProceedingsPaper 
+            LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
+            WHERE publisher="{0}";""".format(id)
             df_sql = read_sql(query, con)
             return df_sql
     
@@ -187,7 +240,22 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getPublicationInVenue(self, venueId):
         with connect(self.dbPath) as con:
-            query = '''SELECT  DISTINCT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles WHERE "issn/isbn" like  "%'{0}'%"  UNION SELECT  DISTINCT id, title, publication_year, orcid, "issn/isbn" FROM BookChapter WHERE "issn/isbn" like  "%'{0}'%"  UNION SELECT  DISTINCT id, title, publication_year, orcid, "issn/isbn" FROM ProceedingsPaper WHERE "issn/isbn" like  "%'{0}'%" ;'''.format(venueId)
+            query = """ SELECT JournalArticles.doi, title, publication_year, orcid, "issn/isbn", publisher 
+            FROM JournalArticles
+            LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
+            WHERE "issn/isbn" like  "%'{0}'%"
+            UNION SELECT   BookChapter.doi, title, publication_year, orcid, "issn/isbn", publisher 
+            FROM BookChapter 
+            LEFT JOIN Venues ON Venues.doi == BookChapter.doi
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == BookChapter.doi
+            WHERE "issn/isbn" like "%'{0}'%"
+            UNION  SELECT  ProceedingsPaper.doi, title, publication_year, orcid, "issn/isbn", publisher 
+            FROM ProceedingsPaper 
+            LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == ProceedingsPaper.doi
+            WHERE "issn/isbn" like  "%'{0}'%";
+            """.format(venueId)
             df_sql = read_sql(query, con)
             return df_sql
 
@@ -197,7 +265,12 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getJournalArticlesInIssue(self, issue, volume, journalId):
         with connect(self.dbPath) as con:
-            query = '''SELECT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles WHERE issue = '{0}' AND volume = '{1}' AND "issn/isbn" like  "%'{2}'%";'''.format(issue, volume, journalId)
+            query = """ SELECT JournalArticles.doi, title, publication_year, issue, volume,  "issn/isbn", orcid,publisher 
+            FROM JournalArticles
+            LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
+            WHERE issue = '{0}' AND volume = '{1}' AND "issn/isbn" like  "%'{2}'%";
+            """.format(issue, volume, journalId)
             df_sql = read_sql(query, con)
             return df_sql
 
@@ -207,7 +280,11 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getJournalArticlesInVolume(self, volume, journalId):
         with connect(self.dbPath) as con:
-            query = '''SELECT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles WHERE volume = '{0}' AND "issn/isbn" like  "%'{1}'%";'''.format(volume, journalId)
+            query = """ SELECT JournalArticles.doi, title, publication_year, issue, volume,  "issn/isbn", orcid,publisher 
+            FROM JournalArticles
+            LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
+            WHERE volume = '{0}' AND "issn/isbn" like  "%'{1}'%";""".format(volume, journalId)
             df_sql = read_sql(query, con)
             return df_sql
         
@@ -217,7 +294,11 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getJournalArticlesInJournal(self, journalId):
         with connect(self.dbPath) as con:
-            query = '''SELECT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles WHERE "issn/isbn" like  "%'{0}'%";'''.format(journalId)
+            query = """ SELECT JournalArticles.doi, title, publication_year, issue, volume,  "issn/isbn", orcid,publisher 
+            FROM JournalArticles
+            LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
+            WHERE "issn/isbn" like  "%'{0}'%";""".format(journalId)            
             df_sql = read_sql(query, con)
             return df_sql
         
@@ -227,7 +308,11 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getProceedingsByEvent(self, eventPartialName):
         with connect(self.dbPath) as con:
-            query = '''SELECT  publication_venue, "issn/isbn", publisher, event FROM Proceedings WHERE event COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%';'''.format(eventPartialName)
+            query = """
+            SELECT  publication_venue, "issn/isbn", publisher, event 
+            FROM ProceedingsPaper
+            LEFT JOIN Venues ON ProceedingsPaper.doi == Venues.doi 
+            WHERE event COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%';""".format(eventPartialName)
             df_sql = read_sql(query, con)
             return df_sql
 
@@ -237,7 +322,18 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getPublicationAuthors(self, publicationId):
         with connect(self.dbPath) as con:
-            query = '''SELECT orcid FROM JournalArticles WHERE id = '{0}' UNION  SELECT orcid FROM BookChapter WHERE id = '{0}' UNION SELECT orcid FROM ProceedingsPaper WHERE id = '{0}';'''.format(publicationId)
+            query = """SELECT orcid
+            FROM JournalArticles
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
+            WHERE AuthorAndPublication.doi="{0}"
+            UNION SELECT   orcid
+            FROM BookChapter 
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == BookChapter.doi
+            WHERE AuthorAndPublication.doi="{0}"
+            UNION  SELECT  orcid 
+            FROM ProceedingsPaper 
+            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == ProceedingsPaper.doi
+            WHERE AuthorAndPublication.doi="{0}";""".format(publicationId)
             coauthors = read_sql(query, con)
             output = DataFrame()
             for label, content in coauthors.iteritems():
@@ -260,8 +356,24 @@ class RelationalQueryProcessor(RelationalProcessor):
             authorId = read_sql(query, con)
             output = DataFrame()
             for label, content in authorId.iteritems():
-                for el in content:    
-                    query = '''SELECT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles  WHERE orcid like "%{0}%" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM BookChapter  WHERE orcid like  "%{0}%" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM ProceedingsPaper  WHERE orcid like  "%{0}%";'''.format(el)
+                for el in content:  # WHY DUPLICATES?? 
+                    query = """SELECT DISTINCT JournalArticles.doi, title, publication_year, orcid, "issn/isbn", publisher 
+                    FROM JournalArticles
+                    LEFT JOIN Venues ON Venues.doi == JournalArticles.doi
+                    LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == JournalArticles.doi
+                    WHERE orcid like  "%'{0}'%"
+                    UNION SELECT  DISTINCT BookChapter.doi, title, publication_year, orcid, "issn/isbn", publisher 
+                    FROM BookChapter 
+                    LEFT JOIN Venues ON Venues.doi == BookChapter.doi
+                    LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == BookChapter.doi
+                    WHERE orcid like  "%'{0}'%"
+                    UNION  SELECT DISTINCT ProceedingsPaper.doi, title, publication_year, orcid, "issn/isbn", publisher 
+                    FROM ProceedingsPaper 
+                    LEFT JOIN Venues ON Venues.doi == ProceedingsPaper.doi
+                    LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == ProceedingsPaper.doi
+                    WHERE orcid like  "%'{0}'%";""".format(el)
+                    
+                    #'''SELECT id, title, publication_year, orcid, "issn/isbn" FROM JournalArticles  WHERE orcid like "%{0}%" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM BookChapter  WHERE orcid like  "%{0}%" UNION SELECT id, title, publication_year, orcid, "issn/isbn" FROM ProceedingsPaper  WHERE orcid like  "%{0}%";'''.format(el)
                     df_sql = read_sql(query, con)
                     output = pd.concat([output, df_sql])
             return output
@@ -274,11 +386,19 @@ class RelationalQueryProcessor(RelationalProcessor):
         with connect(self.dbPath) as con:
             publisherId = DataFrame(); output = DataFrame()
             for el in pubIdList:
-                query = '''SELECT Journal.publisher FROM  JournalArticles LEFT JOIN Journal ON JournalArticles."issn/isbn" == Journal."issn/isbn" WHERE JournalArticles.id = "{0}" UNION SELECT Book.publisher FROM  BookChapter LEFT JOIN Book ON BookChapter."issn/isbn" == Book."issn/isbn" WHERE BookChapter.id = "{0}" UNION SELECT Proceedings.publisher FROM  ProceedingsPaper LEFT JOIN Proceedings ON ProceedingsPaper."issn/isbn" == Proceedings."issn/isbn" WHERE ProceedingsPaper.id = "{0}";'''.format(el)
-                df_sql = read_sql(query, con)
+                query = """SELECT JournalArticles.publisher
+                FROM JournalArticles
+                WHERE doi == "{0}"
+                UNION SELECT BookChapter.publisher
+                FROM BookChapter
+                WHERE doi == "{0}"
+                UNION SELECT ProceedingsPaper.publisher
+                FROM ProceedingsPaper
+                WHERE doi == "{0}";""".format(el)
+                df_sql = read_sql(query, con) #doi:10.1080/21645515.2021.1910000
                 publisherId = pd.concat([publisherId, df_sql])
             for label, content in publisherId.iteritems():
-                for el in content:  
+                for el in content:   
                     query ="""SELECT * FROM Publisher WHERE id = '{0}'""".format(el)
                     df_sql = read_sql(query, con)
                     output = pd.concat([output, df_sql])
@@ -294,9 +414,7 @@ rel_dp.setDbPath(rel_path)
 rel_dp.uploadData("data/relational_publications.csv")
 rel_dp.uploadData("data/relationalJSON.json")
 print(rel_dp.uploadData("data/relationalJSON.json"))
-"""
 rel_qp = RelationalQueryProcessor(rel_path)
 rel_qp.setDbPath(rel_path)
-question = rel_qp.getPublicationsByAuthorId("0000-0001-9857-1511")
+question = rel_qp.getPublicationAuthors("doi:10.1080/21645515.2021.1910000")
 print(question)
-"""

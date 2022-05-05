@@ -95,10 +95,9 @@ class RelationalDataProcessor(RelationalProcessor):
                     venueDoi = df2.join(df1)
 
                     with connect(self.dbPath) as con:
-                        #personDf.to_sql("Person", con, if_exists="replace", index=False)
                         authorDf.to_sql("Author", con, if_exists="replace", index=False)        
                         publisherDf.to_sql("Publisher", con, if_exists="replace", index=False)
-                        referencesdDf.to_sql("References", con, if_exists="replace", index=False)
+                        referencesdDf.to_sql("WorksCited", con, if_exists="replace", index=False)
                         venueDoi.to_sql("Venues_doi", con, if_exists="replace", index=False)
                         con.commit()
                     return True
@@ -128,7 +127,6 @@ class RelationalDataProcessor(RelationalProcessor):
                 proceedings = proceedings[["publication_venue", "publisher", "event"]]
 
                 with connect(self.dbPath) as con:
-                    csvData.to_sql("GeneralDataFrame", con, if_exists="replace", index=False)
                     publication.to_sql("Publication", con, if_exists="replace", index=False)
                     journal_articles.to_sql("JournalArticles", con, if_exists="replace", index=False)
                     book_chapter.to_sql("BookChapter", con, if_exists="replace", index=False)
@@ -178,15 +176,16 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getMostCitedPublication(self):
         with connect(self.dbPath) as con:  
             query = """
-            SELECT CitationsListed."doi mention", COUNT(CitationsListed."doi mention") as MostCited
-            FROM CitationsCondensed
-            LEFT JOIN AuthorAndPublication ON AuthorAndPublication.doi == CitationsCondensed.doi
-            LEFT JOIN CitationsListed ON CitationsListed.doi == AuthorAndPublication.doi
-            GROUP BY CitationsListed."doi mention"
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, MostCited
+            FROM (SELECT WorksCited."doi mention", COUNT(WorksCited."doi mention") as MostCited
+            FROM WorksCited
+            GROUP BY WorksCited."doi mention"
             ORDER BY MostCited DESC
-            LIMIT 1"""
+            LIMIT 1)
+            LEFT JOIN Publication ON Publication.doi == "doi mention"
+            LEFT JOIN Author ON Publication.doi == Author.doi
+            LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi"""
             freqMat = read_sql(query, con)
-            #freqMat = freqMat["doi mention"] With this instruction the method doesn't return the MostCited column
         return freqMat
 
     """
@@ -194,23 +193,20 @@ class RelationalQueryProcessor(RelationalProcessor):
     """
 
     def getMostCitedVenue(self): 
-        mostCitPub = RelationalQueryProcessor.getMostCitedPublication(self)
         with connect(self.dbPath) as con: 
-            for label, content in mostCitPub.iteritems(): #this works
-                query = """ 
-                SELECT Venues."issn/isbn", COUNT(CitationsListed."doi mention") as MostCited
-                FROM BookChapter 
-                LEFT JOIN AuthorAndPublication ON BookChapter.doi = AuthorAndPublication.doi
-                LEFT JOIN Venues ON AuthorAndPublication.doi = Venues.doi
-                LEFT JOIN CitationsListed ON Venues.doi = CitationsListed."doi mention"
-                LEFT JOIN JournalArticles ON JournalArticles.doi = BookChapter.doi
-                LEFT JOIN ProceedingsPaper ON ProceedingsPaper.doi = Venues.doi
-                GROUP BY Venues."issn/isbn"
+            query = """ 
+            SELECT Publication.publication_venue, Venues_doi.id, namedVenues_Publisher."publisher", Publication.title, MostCited 
+            FROM 
+                (SELECT WorksCited."doi mention", COUNT(WorksCited."doi mention") as MostCited
+                FROM WorksCited
+                GROUP BY WorksCited."doi mention"
                 ORDER BY MostCited DESC
-                LIMIT 1              
-                """
-                df_sql = read_sql(query, con)
-                return df_sql
+                LIMIT 1)
+            LEFT JOIN namedVenues_Publisher ON "doi mention" == namedVenues_Publisher.doi 
+            LEFT JOIN Venues_doi ON "doi mention" == Venues_doi.doi
+            LEFT JOIN Publication ON "doi mention" == Publication.doi"""
+            df_sql = read_sql(query, con)
+            return df_sql
 
     """
     getMostCitedVenue: It returns a data frame with all the venues (i.e. the rows) containing the publications that, overall, have received the most number of citations by other publications.
@@ -339,26 +335,15 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getDistinctPublisherOfPublications(self, pubIdList):
         with connect(self.dbPath) as con:
-            publisherId = DataFrame(); output = DataFrame()
+            publisherId = DataFrame()
             for el in pubIdList:
-                query = """SELECT JournalArticles.publisher
-                FROM JournalArticles
-                WHERE doi == "{0}"
-                UNION SELECT BookChapter.publisher
-                FROM BookChapter
-                WHERE doi == "{0}"
-                UNION SELECT ProceedingsPaper.publisher
-                FROM ProceedingsPaper
-                WHERE doi == "{0}";""".format(el)
+                query = """SELECT Publisher.id, Publisher.name
+                FROM Publisher
+                LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher."publisher" == Publisher.id
+                WHERE namedVenues_Publisher.doi = "{0}";""".format(el)
                 df_sql = read_sql(query, con) #doi:10.1080/21645515.2021.1910000
                 publisherId = pd.concat([publisherId, df_sql])
-            for label, content in publisherId.iteritems():
-                for el in content:   
-                    query ="""SELECT * FROM Publisher WHERE id = '{0}'""".format(el)
-                    df_sql = read_sql(query, con)
-                    output = pd.concat([output, df_sql])
-            output["doi"] = pubIdList
-            return output
+            return publisherId
 
     """
     getDistinctPublisherOfPublications: It returns a data frame with all the distinct publishers (i.e. the rows) that have published the venues of the publications with identifiers those specified as input (e.g. [ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]).
@@ -376,9 +361,9 @@ print("1) getPublicationsPublishedInYear:\n",rel_qp.getPublicationsPublishedInYe
 print("-----------------")
 print("2) getPublicationsByAuthorId:\n",rel_qp.getPublicationsByAuthorId("0000-0001-9857-1511"))
 print("-----------------")
-#print("3) getMostCitedPublication:\n", rel_qp.getMostCitedPublication())
+print("3) getMostCitedPublication:\n", rel_qp.getMostCitedPublication())
 print("-----------------")
-#print("4) getMostCitedVenue:\n", rel_qp.getMostCitedVenue())
+print("4) getMostCitedVenue:\n", rel_qp.getMostCitedVenue())
 print("-----------------")
 print("5) getVenuesByPublisherId:\n", rel_qp.getVenuesByPublisherId("crossref:78"))
 print("-----------------")
@@ -396,4 +381,4 @@ print("11) getPublicationAuthors:\n", rel_qp.getPublicationAuthors("doi:10.1080/
 print("-----------------")
 print("12) getPublicationsByAuthorName:\n", rel_qp.getPublicationsByAuthorName("iv"))
 print("-----------------")
-#print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
+print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))

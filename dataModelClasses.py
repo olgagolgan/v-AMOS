@@ -33,6 +33,9 @@ class Publication(IdentifiableEntity):
         self.cited = cited
         self.authors = authors
         self.publicationVenue = publicationVenue
+    
+    def __str__(self): #additional method by Sara in order to print a Publication's class object
+        return 'Publication: ' + str(self.identifier) + ', ' + str(self.publicationYear)+ ', ' + str(self.title) + ', ' + str(self.cited) + ', ' + str(self.authors) + ', ' + str(self.publicationVenue)+ '.'
 
     def getPublicationYear(self):
         return self.publicationYear
@@ -56,6 +59,9 @@ class JournalArticle(Publication):
         super().__init__(identifier, publicationYear, title, cited, authors, publicationVenue)
         self.issue = issue
         self.volume = volume
+    
+    def __str__(self): #additional method by Sara in order to print a Publication's class object
+        return 'Journal Article: ' + str(self.identifier) + ', ' + str(self.publicationYear)+ ', ' + str(self.title) + ', ' + str(self.cited) + ', ' + str(self.authors) + ', ' + str(self.publicationVenue)+ ', ' + str(self.issue)+ ', ' + str(self.volume)+ '.'   
 
     def getIssue(self):
         return self.issue
@@ -84,6 +90,9 @@ class Venue(IdentifiableEntity):
         self.title = title
         self.publisher = publisher
 
+    def __str__(self):
+        return 'Venue: ' + str(self.identifier) + ', ' + str(self.title) + ', ' + str(self.publisher) + '.' 
+        
     def getTitle(self):
         return self.title
 
@@ -114,6 +123,9 @@ class Person(IdentifiableEntity):
         super().__init__(identifier)
         self.givenName = givenName
         self.familyName = familyName
+    
+    def __str__(self):
+        return 'Person: ' + str(self.identifier) + ', ' +str(self.givenName)+ ' ' + str(self.familyName) + '.'
 
     def getGivenName(self):
         return self.givenName
@@ -126,6 +138,9 @@ class Organization(IdentifiableEntity):
     def __init__(self, identifier, name):
         super().__init__(identifier)
         self.name = name
+    
+    def __str__(self):
+        return 'Organization: ' + str(self.identifier) + ', ' + str(self.name) + '.'
 
     def getName(self):
         return self.name

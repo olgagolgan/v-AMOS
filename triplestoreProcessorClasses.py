@@ -118,13 +118,13 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getPublicationsPublishedInYear(self, year):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?orcid ?given ?family ?title ?id ?publication_venue ?publisher ?publication_year
+            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year
             WHERE {
-            {SELECT ?orcid ?title ?id ?publication_venue ?publisher ?publication_year
+            {SELECT ?orcid ?title ?doi ?publication_venue ?publisher ?publication_year
             WHERE{
               ?s schema:creator ?orcid.
               ?s schema:title ?title.
-              ?s schema:productID ?id.
+              ?s schema:productID ?doi.
               ?s schema:publishedBy ?publisher.
               ?s schema:isPartOf ?publication_venue.
               ?s schema:datePublished ?publication_year.
@@ -142,7 +142,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getPublicationsByAuthorId(self, id):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?orcid ?given ?family ?title ?id ?publication_venue ?publisher ?publication_year
+            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year
             WHERE {
             {SELECT ?orcid ?given ?family
             WHERE{
@@ -154,7 +154,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
             }
           ?s schema:creator ?orcid.
           ?s schema:title ?title.
-          ?s schema:productID ?id.
+          ?s schema:productID ?doi.
           ?s schema:publishedBy ?publisher.
           ?s schema:isPartOf ?publication_venue.
           ?s schema:datePublished ?publication_year.                       
@@ -165,7 +165,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getMostCitedPublication(self):
         qry = """
                 PREFIX schema: <https://schema.org/>
-                SELECT ?orcid ?given ?family ?title ?id ?publication_venue ?publisher ?publication_year (COUNT(?cite) as ?mostCited)
+                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year (COUNT(?cite) as ?mostCited)
                 WHERE {
                 {
                 SELECT ?orcid ?given ?family
@@ -177,13 +177,13 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                  }           
                   ?s schema:creator ?orcid.
                   ?s schema:title ?title.
-                  ?s schema:productID ?id.
+                  ?s schema:productID ?doi.
                   ?s schema:publishedBy ?publisher.
                   ?s schema:isPartOf ?publication_venue.
                   ?s schema:datePublished ?publication_year.
                   ?s schema:citation ?cite
                 }
-                GROUP BY ?orcid ?given ?family ?title ?id ?publication_venue ?publisher ?publication_year
+                GROUP BY ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year
                 ORDER BY DESC(?mostCited)
                 LIMIT 1
             """
@@ -193,15 +193,15 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getMostCitedVenue(self):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?publication_venue ?issn ?publisher ?title (COUNT(?cite) as ?mostCited)
+            SELECT ?publication_venue ?id ?publisher ?title (COUNT(?cite) as ?mostCited)
             WHERE {
               ?s schema:isPartOf ?publication_venue.
               ?s schema:title ?title.
               ?s schema:publishedBy ?publisher.
-              ?s schema:VirtualLocation ?issn.
+              ?s schema:VirtualLocation ?id.
               ?s schema:citation ?cite
             }
-            GROUP BY ?publication_venue ?issn ?title ?publisher
+            GROUP BY ?publication_venue ?id ?title ?publisher
             ORDER BY DESC(?mostCited)
             LIMIT 1
         """
@@ -211,7 +211,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getVenuesByPublisherId(self, id):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?title ?issn ?publisher ?name ?id
+            SELECT ?title ?venue_id ?publisher ?name ?id
             WHERE{
            {SELECT ?name ?id
             WHERE {
@@ -221,7 +221,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
             }
            }
            ?s schema:title ?title.
-           ?s schema:VirtualLocation ?issn.
+           ?s schema:VirtualLocation ?venue_id.
            ?s schema:publishedBy ?publisher
             }
         """
@@ -231,7 +231,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getPublicationInVenue(self, venueId):
         qry = """ 
                 PREFIX schema: <https://schema.org/>
-                SELECT ?orcid ?given ?family ?title ?id ?publication_venue ?publication_year
+                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publication_year
                 WHERE {
                 {SELECT ?orcid ?given ?family
                   WHERE{
@@ -242,10 +242,10 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                 }
               ?s schema:creator ?orcid.
               ?s schema:title ?title.
-              ?s schema:productID ?id.
+              ?s schema:productID ?doi.
               ?s schema:datePublished ?publication_year.
               ?s schema:isPartOf ?publication_venue.
-              ?s schema:VirtualLocation ?issn.
+              ?s schema:VirtualLocation ?venue_id.
               ?s schema:VirtualLocation '""" + str(venueId) + """'
                         }"""
 
@@ -255,7 +255,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getJournalArticlesInIssue(self, issue, volume, journalId):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?orcid ?given ?family ?title ?publication_venue ?publication_year
+            SELECT ?orcid ?given ?family ?title ?issue ?volume ?publication_venue ?publication_year
             WHERE {
             {SELECT ?orcid ?given ?family
               WHERE{
@@ -272,8 +272,8 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
           ?s schema:issueNumber '""" + str(issue) + """'.
           ?s schema:volumeNumber ?volume.
           ?s schema:volumeNumber '""" + str(volume) + """'.
-          ?s schema:productID ?id.
-          ?s schema:productID '""" + str(journalId) + """'
+          ?s schema:VirtualLocation ?venue_id.
+          ?s schema:VirtualLocation '""" + str(journalId) + """'
           }
          """
         df_sparql = get(self.endpointUri, qry, True)
@@ -282,7 +282,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getJournalArticlesInVolume(self, volume, journalId):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?orcid ?given ?family ?title ?publication_venue ?publication_year
+            SELECT ?orcid ?given ?family ?title ?issue ?volume ?publication_venue ?publication_year
             WHERE {
             {SELECT ?orcid ?given ?family
               WHERE{
@@ -297,8 +297,8 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
           ?s schema:isPartOf ?publication_venue.
           ?s schema:volumeNumber ?volume.
           ?s schema:volumeNumber '""" + str(volume) + """'.
-          ?s schema:productID ?id.
-          ?s schema:productID '""" + str(journalId) + """'
+          ?s schema:VirtualLocation ?venue_id.
+          ?s schema:VirtualLocation '""" + str(journalId) + """'
           }    
         """
         df_sparql = get(self.endpointUri, qry, True)
@@ -307,7 +307,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getJournalArticlesInJournal(self, journalId):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?orcid ?given ?family ?title ?publication_venue ?publication_year
+            SELECT ?orcid ?given ?family ?title ?issue ?volume ?publication_venue ?publication_year
             WHERE {
             {SELECT ?orcid ?given ?family
               WHERE{
@@ -320,8 +320,8 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
           ?s schema:title ?title.
           ?s schema:datePublished ?publication_year.
           ?s schema:isPartOf ?publication_venue.
-          ?s schema:productID ?id.
-          ?s schema:productID '""" + str(journalId) + """'
+          ?s schema:VirtualLocation ?venue_id.
+          ?s schema:VirtualLocation '""" + str(journalId) + """'
           }       
         """
         df_sparql = get(self.endpointUri, qry, True)
@@ -331,10 +331,10 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         qry = """
          PREFIX schema:<https://schema.org/>
 
-          SELECT ?title ?issn/isbn ?publisher
+          SELECT ?publication_venue ?venue_id ?publisher
           WHERE {
-              ?s schema:title ?title.
-              ?s schema:VirtualLocation ?issn.
+              ?s schema:title ?publication_venue.
+              ?s schema:VirtualLocation ?venue_id.
               ?s schema:publishedBy ?publisher.
               ?s schema:Event ?event.
               FILTER (REGEX(?event,'""" + str(eventPartialName) + """', "i"))
@@ -366,11 +366,11 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getPublicationsByAuthorName(self, authorPartialName):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?id ?title ?publication_year ?publication_venue ?given ?family
+            SELECT ?doi ?title ?publication_year ?publication_venue ?orcid ?given ?family
             WHERE 
             {
                 ?x schema:creator ?orcid.
-                ?x schema:productID ?id.
+                ?x schema:productID ?doi.
                 ?x schema:title ?title.
                 ?x schema:datePublished ?publication_year.
                 ?x schema:isPartOf ?publication_venue.
@@ -399,18 +399,32 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
 
         qry = """
         PREFIX schema: <https://schema.org/>
-        SELECT ?publisher ?name
+        SELECT ?id ?name
         WHERE {
           ?x schema:name ?name.
-          ?x schema:identifier ?publisher. {
-        SELECT ?publisher
+          ?x schema:identifier ?id. {
+        SELECT ?id
         WHERE {
           VALUES ?target {""" + listOfTarget + """}
-          ?s schema:publishedBy ?publisher.
+          ?s schema:publishedBy ?id.
           ?s schema:isPartOf ?publication_venue.
-          ?s schema:productID ?id.
+          ?s schema:productID ?doi.
           ?s schema:productID  ?target }  }    
           }
           """
+        df_sparql = get(self.endpointUri, qry, True)
+        return df_sparql
+
+    def getCitedOfPublication(self, publicationId):
+
+        qry = """
+        PREFIX schema: <https://schema.org/>
+        SELECT ?doi_mention
+        WHERE{
+            ?y schema:citation ?doi_mention.
+            ?y schema:productID ?doi.
+            ?y schema:productID '""" + str(publicationId) + """'
+            }
+            """
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql

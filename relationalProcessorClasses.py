@@ -39,7 +39,7 @@ class RelationalDataProcessor(RelationalProcessor):
                             row = [doi, id+1]
                             rows_first.append(row)
                     df1 = pd.DataFrame(rows_author)
-                    df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "coauthor no."]
+                    df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "coauthor_no."]
                     authorDf = df2.join(df1)
                     
                     """
@@ -74,8 +74,8 @@ class RelationalDataProcessor(RelationalProcessor):
                         for id in range(len(references[doi])):
                             row = [doi, id]
                             rows_first.append(row)
-                    df1 = pd.DataFrame(rows_ref); df1.columns = ["doi mention"]
-                    df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "reference no."]
+                    df1 = pd.DataFrame(rows_ref); df1.columns = ["doi_mention"]
+                    df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "reference_no."]
                     referencesdDf = df2.join(df1)
 
                     #========= VENUES ID ====================
@@ -90,8 +90,8 @@ class RelationalDataProcessor(RelationalProcessor):
                             idno = idx + 1
                             row = [doi, idno]
                             rows_first.append(row)
-                    df1 = pd.DataFrame(rows_ven); df1.columns = ["id"]
-                    df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "id no."]
+                    df1 = pd.DataFrame(rows_ven); df1.columns = ["venue_id"]
+                    df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "id_no."]
                     venueDoi = df2.join(df1)
 
                     with connect(self.dbPath) as con:
@@ -165,11 +165,11 @@ class RelationalQueryProcessor(RelationalProcessor):
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
-            WHERE Author.orcid = '{0}';""".format(id)
+            WHERE Author.orcid = '{0}'""".format(id)
             df_sql = read_sql(query, con)
             return df_sql
 
-    """
+    """ 
     getPublicationsByAuthorId: It returns a data frame with all the publications (i.e. the rows) that have been authored by the person having the identifier specified as input (e.g. "0000-0001-9857-1511").
     """
 
@@ -177,12 +177,12 @@ class RelationalQueryProcessor(RelationalProcessor):
         with connect(self.dbPath) as con:  
             query = """
             SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, MostCited
-            FROM (SELECT WorksCited."doi mention", COUNT(WorksCited."doi mention") as MostCited
+            FROM (SELECT WorksCited."doi_mention", COUNT(WorksCited."doi_mention") as MostCited
             FROM WorksCited
-            GROUP BY WorksCited."doi mention"
+            GROUP BY WorksCited."doi_mention"
             ORDER BY MostCited DESC
             LIMIT 1)
-            LEFT JOIN Publication ON Publication.doi == "doi mention"
+            LEFT JOIN Publication ON Publication.doi == "doi_mention"
             LEFT JOIN Author ON Publication.doi == Author.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi"""
             freqMat = read_sql(query, con)
@@ -195,16 +195,16 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getMostCitedVenue(self): 
         with connect(self.dbPath) as con: 
             query = """ 
-            SELECT Publication.publication_venue, Venues_doi.id, namedVenues_Publisher."publisher", Publication.title, MostCited 
+            SELECT Publication.publication_venue, Venues_doi.venue_id, namedVenues_Publisher."publisher", Publication.title, MostCited 
             FROM 
-                (SELECT WorksCited."doi mention", COUNT(WorksCited."doi mention") as MostCited
+                (SELECT WorksCited."doi_mention", COUNT(WorksCited."doi_mention") as MostCited
                 FROM WorksCited
-                GROUP BY WorksCited."doi mention"
+                GROUP BY WorksCited."doi_mention"
                 ORDER BY MostCited DESC
                 LIMIT 1)
-            LEFT JOIN namedVenues_Publisher ON "doi mention" == namedVenues_Publisher.doi 
-            LEFT JOIN Venues_doi ON "doi mention" == Venues_doi.doi
-            LEFT JOIN Publication ON "doi mention" == Publication.doi"""
+            LEFT JOIN namedVenues_Publisher ON "doi_mention" == namedVenues_Publisher.doi 
+            LEFT JOIN Venues_doi ON "doi_mention" == Venues_doi.doi
+            LEFT JOIN Publication ON "doi_mention" == Publication.doi"""
             df_sql = read_sql(query, con)
             return df_sql
 
@@ -214,12 +214,12 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getVenuesByPublisherId(self, id):
         with connect(self.dbPath) as con:
-            query = """SELECT  Publication.title, Venues_doi.id , Publication.publication_venue, Publisher.name, Publisher.id
+            query = """SELECT  Publication.title, Venues_doi.venue_id, Publication.publication_venue, Publisher.name, Publisher.id
             FROM Publication
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             LEFT JOIN Venues_doi ON Venues_doi.doi == Publication.doi
             LEFT JOIN Publisher ON Publisher.id == namedVenues_Publisher."publisher"
-            WHERE namedVenues_Publisher."publisher" = "{0}";""".format(id)
+            WHERE namedVenues_Publisher."publisher" = '{0}';""".format(id)
             df_sql = read_sql(query, con)
         return df_sql
     
@@ -229,12 +229,12 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getPublicationInVenue(self, venueId):
         with connect(self.dbPath) as con:
-            query = """ SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year
+            query = """ SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, Publication.publication_year
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             LEFT JOIN Venues_doi ON Venues_doi.doi == Publication.doi
-            WHERE Venues_doi.id like "%'{0}'%";""".format(venueId)
+            WHERE Venues_doi.venue_id like '{0}';""".format(venueId)
             df_sql = read_sql(query, con)
         return df_sql
 
@@ -250,7 +250,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             LEFT JOIN Venues_doi ON Venues_doi.doi == Publication.doi
             LEFT JOIN JournalArticles ON JournalArticles.doi == Publication.doi
-            WHERE  JournalArticles.issue = '{0}' AND JournalArticles.volume = '{1}' AND Venues_doi.id = '{2}';""".format(issue, volume, journalId)
+            WHERE  JournalArticles.issue = '{0}' AND JournalArticles.volume = '{1}' AND Venues_doi.venue_id = '{2}';""".format(issue, volume, journalId)
             df_sql = read_sql(query, con)
         return df_sql
 
@@ -266,7 +266,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             LEFT JOIN Venues_doi ON Venues_doi.doi == Publication.doi
             LEFT JOIN JournalArticles ON JournalArticles.doi == Publication.doi
-            WHERE JournalArticles.volume = '{0}' AND Venues_doi.id = '{1}';""".format(volume, journalId)
+            WHERE JournalArticles.volume = '{0}' AND Venues_doi.venue_id = '{1}';""".format(volume, journalId)
             df_sql = read_sql(query, con)
             return df_sql
         
@@ -282,7 +282,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             LEFT JOIN Venues_doi ON Venues_doi.doi == Publication.doi
             LEFT JOIN JournalArticles ON JournalArticles.doi == Publication.doi
-            WHERE Venues_doi.id = '{0}';""".format(journalId)         
+            WHERE Venues_doi.venue_id = '{0}';""".format(journalId)         
             df_sql = read_sql(query, con)
         return df_sql
         
@@ -293,7 +293,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getProceedingsByEvent(self, eventPartialName):
         with connect(self.dbPath) as con:
             query = """
-            SELECT publication_venue, Venues_doi.id, Proceedings.publisher
+            SELECT publication_venue, Venues_doi.venue_id, Proceedings.publisher
             FROM Proceedings
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.publisher == Proceedings.publisher
             LEFT JOIN Venues_doi ON Venues_doi.doi == namedVenues_Publisher.doi
@@ -309,7 +309,7 @@ class RelationalQueryProcessor(RelationalProcessor):
         with connect(self.dbPath) as con:
             query = """SELECT orcid, given, family
             FROM Author
-            WHERE doi = "{0}";""".format(publicationId)
+            WHERE doi = '{0}';""".format(publicationId)
             coauthors = read_sql(query, con)
             return coauthors
 
@@ -340,7 +340,7 @@ class RelationalQueryProcessor(RelationalProcessor):
                 query = """SELECT Publisher.id, Publisher.name
                 FROM Publisher
                 LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher."publisher" == Publisher.id
-                WHERE namedVenues_Publisher.doi = "{0}";""".format(el)
+                WHERE namedVenues_Publisher.doi = '{0}';""".format(el)
                 df_sql = read_sql(query, con) #doi:10.1080/21645515.2021.1910000
                 publisherId = pd.concat([publisherId, df_sql])
             return publisherId
@@ -349,7 +349,17 @@ class RelationalQueryProcessor(RelationalProcessor):
     getDistinctPublisherOfPublications: It returns a data frame with all the distinct publishers (i.e. the rows) that have published the venues of the publications with identifiers those specified as input (e.g. [ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]).
     """
 
-rel_path = "penelope.db"
+    def getCitedOfPublication(self, publicationId):
+        with connect(self.dbPath) as con: 
+            query = """
+            SELECT "doi_mention"
+            FROM WorksCited
+            WHERE doi == '{0}';""".format(publicationId)
+            cited = read_sql(query, con)
+            return cited
+
+#rel_p = RelationalProcessor("sonno.db")
+rel_path = "sonno.db"
 rel_dp = RelationalDataProcessor(rel_path)
 rel_dp.setDbPath(rel_path)
 rel_dp.uploadData("data/relational_publications.csv")
@@ -357,28 +367,28 @@ rel_dp.uploadData("data/relationalJSON.json")
 rel_qp = RelationalQueryProcessor(rel_path)
 rel_qp.setDbPath(rel_path)
 
-print("1) getPublicationsPublishedInYear:\n",rel_qp.getPublicationsPublishedInYear(2020))
-print("-----------------")
-print("2) getPublicationsByAuthorId:\n",rel_qp.getPublicationsByAuthorId("0000-0001-9857-1511"))
-print("-----------------")
-print("3) getMostCitedPublication:\n", rel_qp.getMostCitedPublication())
-print("-----------------")
-print("4) getMostCitedVenue:\n", rel_qp.getMostCitedVenue())
-print("-----------------")
-print("5) getVenuesByPublisherId:\n", rel_qp.getVenuesByPublisherId("crossref:78"))
-print("-----------------")
-print("6) getPublicationInVenue:\n", rel_qp.getPublicationInVenue("issn:0944-1344"))
-print("-----------------")
-print("7) getJournalArticlesInIssue:\n", rel_qp.getJournalArticlesInIssue(9, 17, "issn:2164-5515"))
-print("-----------------")
-print("8) getJournalArticlesInVolume:\n", rel_qp.getJournalArticlesInVolume(17, "issn:2164-5515"))
-print("-----------------")
-print("9) getJournalArticlesInJournal:\n", rel_qp.getJournalArticlesInJournal("issn:2164-5515"))
-print("-----------------")
-print("10) getProceedingsByEvent:\n", rel_qp.getProceedingsByEvent("web"))
-print("-----------------")
-print("11) getPublicationAuthors:\n", rel_qp.getPublicationAuthors("doi:10.1080/21645515.2021.1910000"))
-print("-----------------")
-print("12) getPublicationsByAuthorName:\n", rel_qp.getPublicationsByAuthorName("iv"))
-print("-----------------")
-print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
+# print("1) getPublicationsPublishedInYear:\n",rel_qp.getPublicationsPublishedInYear(2020))
+# print("-----------------")
+# print("2) getPublicationsByAuthorId:\n",rel_qp.getPublicationsByAuthorId("0000-0001-9857-1511"))
+# print("-----------------")
+# print("3) getMostCitedPublication:\n", rel_qp.getMostCitedPublication())
+# print("-----------------")
+# print("4) getMostCitedVenue:\n", rel_qp.getMostCitedVenue())
+# print("-----------------")
+# print("5) getVenuesByPublisherId:\n", rel_qp.getVenuesByPublisherId("crossref:78"))
+# print("-----------------")
+# print("6) getPublicationInVenue:\n", rel_qp.getPublicationInVenue("issn:0944-1344"))
+# print("-----------------")
+# print("7) getJournalArticlesInIssue:\n", rel_qp.getJournalArticlesInIssue(9, 17, "issn:2164-5515"))
+# print("-----------------")
+# print("8) getJournalArticlesInVolume:\n", rel_qp.getJournalArticlesInVolume(17, "issn:2164-5515"))
+# print("-----------------")
+# print("9) getJournalArticlesInJournal:\n", rel_qp.getJournalArticlesInJournal("issn:2164-5515"))
+# print("-----------------")
+# print("10) getProceedingsByEvent:\n", rel_qp.getProceedingsByEvent("web"))
+# print("-----------------")
+# print("11) getPublicationAuthors:\n", rel_qp.getPublicationAuthors("doi:10.1080/21645515.2021.1910000"))
+# print("-----------------")
+# print("12) getPublicationsByAuthorName:\n", rel_qp.getPublicationsByAuthorName("iv"))
+# print("-----------------")
+# print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))

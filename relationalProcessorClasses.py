@@ -381,7 +381,7 @@ rel_dp.uploadData("data/relational_publications.csv")
 rel_dp.uploadData("data/relationalJSON.json")
 rel_qp = RelationalQueryProcessor(rel_path)
 rel_qp.setDbPath(rel_path)
-
+"""
 print("1) getPublicationsPublishedInYear:\n",rel_qp.getPublicationsPublishedInYear(2020))
 print("-----------------")
 print("2) getPublicationsByAuthorId:\n",rel_qp.getPublicationsByAuthorId("0000-0001-9857-1511"))
@@ -409,3 +409,4 @@ print("-----------------")
 print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
 print("-----------------")
 print("14) getCitedOfPublication:\n", rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))
+"""

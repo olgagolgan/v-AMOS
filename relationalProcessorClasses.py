@@ -410,4 +410,3 @@ print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOf
 print("-----------------")
 print(rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))
 """
-print("10) getProceedingsByEvent:\n", rel_qp.getProceedingsByEvent("meet"))

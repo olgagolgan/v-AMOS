@@ -128,7 +128,7 @@ class RelationalDataProcessor(RelationalProcessor):
                 venueNamesPub.rename(columns = {'id':'doi'}, inplace = True)
 
                 # ========= PROCEEDINGS ============== 
-                proceedings = csvData.query("venue_type == 'proceedings'")
+                proceedings = csvData.query("venue_type == 'proceeding'")
                 proceedings = proceedings[["id","publication_venue", "publisher", "event"]]
                 proceedings.rename(columns = {'id':'doi'}, inplace = True)
 
@@ -401,7 +401,7 @@ print("8) getJournalArticlesInVolume:\n", rel_qp.getJournalArticlesInVolume(17, 
 print("-----------------")
 print("9) getJournalArticlesInJournal:\n", rel_qp.getJournalArticlesInJournal("issn:2164-5515"))
 print("-----------------")
-print("10) getProceedingsByEvent:\n", rel_qp.getProceedingsByEvent("open"))
+print("10) getProceedingsByEvent:\n", rel_qp.getProceedingsByEvent("meet"))
 print("-----------------")
 print("11) getPublicationAuthors:\n", rel_qp.getPublicationAuthors("doi:10.1080/21645515.2021.1910000"))
 print("-----------------")

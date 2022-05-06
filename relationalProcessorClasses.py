@@ -300,10 +300,9 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getProceedingsByEvent(self, eventPartialName):
         with connect(self.dbPath) as con:
             query = """
-            SELECT publication_venue, Venues_doi.venue_id, Proceedings.publisher
-            FROM Proceedings
-            LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.publisher == Proceedings.publisher
-            LEFT JOIN Venues_doi ON Venues_doi.doi == namedVenues_Publisher.doi
+            SELECT Proceedings.publication_venue , Venues_doi.venue_id, Proceedings.publisher
+            FROM Proceedings 
+            LEFT JOIN Venues_doi ON Venues_doi.doi == Proceedings.doi
             WHERE Proceedings.event COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%' """.format(eventPartialName)
             df_sql = read_sql(query, con)
             return df_sql
@@ -375,14 +374,14 @@ class RelationalQueryProcessor(RelationalProcessor):
             return output
 
 #rel_p = RelationalProcessor("sonno.db")
-rel_path = "sonno.db"
+rel_path = "penelope.db"
 rel_dp = RelationalDataProcessor(rel_path)
 rel_dp.setDbPath(rel_path)
-rel_dp.uploadData("data/relational_publications.csv")
-rel_dp.uploadData("data/relationalJSON.json")
+rel_dp.uploadData("data/relational_publications2.csv")
+rel_dp.uploadData("data/relationalJSON2.json")
 rel_qp = RelationalQueryProcessor(rel_path)
 rel_qp.setDbPath(rel_path)
-
+"""
 print("1) getPublicationsPublishedInYear:\n",rel_qp.getPublicationsPublishedInYear(2020))
 print("-----------------")
 print("2) getPublicationsByAuthorId:\n",rel_qp.getPublicationsByAuthorId("0000-0001-9857-1511"))
@@ -410,3 +409,5 @@ print("-----------------")
 print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
 print("-----------------")
 print(rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))
+"""
+print("10) getProceedingsByEvent:\n", rel_qp.getProceedingsByEvent("meet"))

@@ -129,7 +129,8 @@ class RelationalDataProcessor(RelationalProcessor):
 
                 # ========= PROCEEDINGS ============== 
                 proceedings = csvData.query("venue_type == 'proceedings-paper'")
-                proceedings = proceedings[["publication_venue", "publisher", "event"]]
+                proceedings = proceedings[["id","publication_venue", "publisher", "event"]]
+                proceedings.rename(columns = {'id':'doi'}, inplace = True)
 
                 with connect(self.dbPath) as con:
                     publication.to_sql("Publication", con, if_exists="replace", index=False)

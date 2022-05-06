@@ -349,14 +349,23 @@ class RelationalQueryProcessor(RelationalProcessor):
     getDistinctPublisherOfPublications: It returns a data frame with all the distinct publishers (i.e. the rows) that have published the venues of the publications with identifiers those specified as input (e.g. [ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]).
     """
 
-    def getCitedOfPublication(self, publicationId):
+    def getCitedOfPublication(self, doi):
         with connect(self.dbPath) as con: 
-            query = """
-            SELECT "doi_mention"
+            query = """ SELECT doi_mention
             FROM WorksCited
-            WHERE doi == '{0}';""".format(publicationId)
-            cited = read_sql(query, con)
-            return cited
+            WHERE doi = "{0}";""".format(doi)
+            worksCited = read_sql(query, con)
+            output = pd.DataFrame()
+            for label, content in worksCited.iteritems():
+                for doiCited in content:
+                    query = """ SELECT Author.doi, Author.orcid, Author.given, Author.family,  Publication.title,  Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year
+                    FROM Publication
+                    LEFT JOIN Author ON Publication.doi == Author.doi
+                    LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
+                    WHERE Publication.doi = '{0}';""".format(doiCited)
+                    df_sql = read_sql(query, con)
+                    output = pd.concat([output, df_sql])
+            return output
 
 #rel_p = RelationalProcessor("sonno.db")
 rel_path = "sonno.db"
@@ -392,3 +401,5 @@ rel_qp.setDbPath(rel_path)
 # print("12) getPublicationsByAuthorName:\n", rel_qp.getPublicationsByAuthorName("iv"))
 # print("-----------------")
 # print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
+# print("-----------------")
+# print("14) getCitedOfPublication:\n", rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))

@@ -374,11 +374,11 @@ class RelationalQueryProcessor(RelationalProcessor):
             return output
 
 #rel_p = RelationalProcessor("sonno.db")
-rel_path = "penelope.db"
+rel_path = "sonno.db"
 rel_dp = RelationalDataProcessor(rel_path)
 rel_dp.setDbPath(rel_path)
-rel_dp.uploadData("data/relational_publications2.csv")
-rel_dp.uploadData("data/relationalJSON2.json")
+rel_dp.uploadData("data/relational_publications.csv")
+rel_dp.uploadData("data/relationalJSON.json")
 rel_qp = RelationalQueryProcessor(rel_path)
 rel_qp.setDbPath(rel_path)
 """

@@ -128,7 +128,7 @@ class RelationalDataProcessor(RelationalProcessor):
                 venueNamesPub.rename(columns = {'id':'doi'}, inplace = True)
 
                 # ========= PROCEEDINGS ============== 
-                proceedings = csvData.query("venue_type == 'proceedings-paper'")
+                proceedings = csvData.query("venue_type == 'proceeding'")
                 proceedings = proceedings[["id","publication_venue", "publisher", "event"]]
                 proceedings.rename(columns = {'id':'doi'}, inplace = True)
 
@@ -300,10 +300,9 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getProceedingsByEvent(self, eventPartialName):
         with connect(self.dbPath) as con:
             query = """
-            SELECT publication_venue, Venues_doi.venue_id, Proceedings.publisher
-            FROM Proceedings
-            LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.publisher == Proceedings.publisher
-            LEFT JOIN Venues_doi ON Venues_doi.doi == namedVenues_Publisher.doi
+            SELECT Proceedings.publication_venue , Venues_doi.venue_id, Proceedings.publisher
+            FROM Proceedings 
+            LEFT JOIN Venues_doi ON Venues_doi.doi == Proceedings.doi
             WHERE Proceedings.event COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%' """.format(eventPartialName)
             df_sql = read_sql(query, con)
             return df_sql
@@ -401,7 +400,7 @@ print("8) getJournalArticlesInVolume:\n", rel_qp.getJournalArticlesInVolume(17, 
 print("-----------------")
 print("9) getJournalArticlesInJournal:\n", rel_qp.getJournalArticlesInJournal("issn:2164-5515"))
 print("-----------------")
-print("10) getProceedingsByEvent:\n", rel_qp.getProceedingsByEvent("web"))
+print("10) getProceedingsByEvent:\n", rel_qp.getProceedingsByEvent("meet"))
 print("-----------------")
 print("11) getPublicationAuthors:\n", rel_qp.getPublicationAuthors("doi:10.1080/21645515.2021.1910000"))
 print("-----------------")
@@ -409,5 +408,5 @@ print("12) getPublicationsByAuthorName:\n", rel_qp.getPublicationsByAuthorName("
 print("-----------------")
 print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
 print("-----------------")
+print(rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))
 """
-#print(rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023").columns)

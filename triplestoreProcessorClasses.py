@@ -418,13 +418,28 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getCitedOfPublication(self, publicationId):
 
         qry = """
-        PREFIX schema: <https://schema.org/>
-        SELECT ?doi_mention
-        WHERE{
-            ?y schema:citation ?doi_mention.
-            ?y schema:productID ?doi.
-            ?y schema:productID '""" + str(publicationId) + """'
-            }
-            """
+            PREFIX schema: <https://schema.org/>
+            SELECT ?doi ?orcid ?given ?family ?title ?publication_venue ?publisher ?publication_year
+            WHERE{ 
+              {SELECT ?title ?publication_venue ?publication_year ?publisher ?orcid ?doi
+               WHERE{ 
+                 {SELECT ?doi
+                  WHERE{
+                       ?y schema:citation ?doi.
+                       ?y schema:productID '""" + str(publicationId) + """'
+                     }
+                 }
+                     ?x schema:citation ?doi.
+                     ?x schema:title ?title.
+                     ?x schema:isPartOf ?publication_venue.
+                     ?x schema:datePublished ?publication_year.
+                     ?x schema:publishedBy ?publisher.
+                     ?x schema:creator ?orcid
+                }}
+        
+                ?x schema:creator ?orcid.
+                ?x schema:givenName ?given.
+                ?x schema:familyName ?family
+            }"""
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql

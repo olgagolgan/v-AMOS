@@ -25,40 +25,43 @@ class GenericQueryProcessor:
     #####################################
     
     #ADDITIONAL METHODS FOR A BETTER CODE
-    def GetCitation(identifier): 
+    def getCitation(self, identifier): 
         graph_cite = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getCitedOfPublication(identifier)
-        rel_cite = RelationalQueryProcessor("sonno.db").getCitedOfPublication(identifier)  # gp back to the correct format
+        rel_cite = RelationalQueryProcessor("sonno.db").getCitedOfPublication(identifier)  
         df_cite = concat([graph_cite, rel_cite], ignore_index=True)
         df_cite_no_dupl = df_cite.drop_duplicates()
         cites_list = list()
         for row_idx, row in df_cite_no_dupl.iterrows():
-            cite = row["doi_mention"]
-            cites_list.append(cite)
+            identifier = row["doi"]
+            publicationYear = row["publication_year"]
+            title = row["title"]
+            publicationVenue = row["publication_venue"]
+            authors = GenericQueryProcessor.getAuthors(identifier)           
+            cited_pub = 'Cited publication: ' + str(identifier) + '; publication year: ' + str(publicationYear) + '; title: ' + str(title) + '; authors: ' + str(authors) + '; publication venue: '  + str(publicationVenue)
+            cites_list.append(cited_pub)
+            cites_list = '\n'.join(cites_list)
         return cites_list
 
-    def GetAuthorsList(identifier):
+    def getAuthors(identifier):
         graph_au = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationAuthors(identifier)
-        rel_au = RelationalQueryProcessor("sonno.db").getPublicationAuthors(identifier)  # gp back to the correct format
+        rel_au = RelationalQueryProcessor("sonno.db").getPublicationAuthors(identifier) 
         df_au = concat([graph_au, rel_au], ignore_index=True)
         df_au_no_dupl = df_au.drop_duplicates()
-        authors = list()
+        authors = set()
 
         for row_idx, row in df_au_no_dupl.iterrows():
             orcid = row["orcid"]
             givenName = row["given"]
             familyName = row["family"]
-            author = list()
-            author.append(orcid)
-            author.append(givenName)
-            author.append(familyName)
-            authors.append(author)
+            author = str(orcid) + ", " + str(givenName) + ", " + str(familyName)
+            authors.add(author)
         return authors
     
     #######################################
 
     def getPublicationsPublishedInYear(self, year):
         graph_year = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationsPublishedInYear(year)
-        rel_year = RelationalQueryProcessor("sonno.db").getPublicationsPublishedInYear(year)  # gp back to the correct format
+        rel_year = RelationalQueryProcessor("sonno.db").getPublicationsPublishedInYear(year)  
         df_union = concat([graph_year, rel_year], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         df_union_sorted = df_union_no_dupl.sort_values("publication_year")
@@ -69,18 +72,18 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             publicationVenue = row["publication_venue"]
-            authors = GenericQueryProcessor.GetAuthorsList(identifier)           
-            cites_list = GenericQueryProcessor.GetCitation(identifier)
+            authors = GenericQueryProcessor.getAuthors(identifier)           
+            cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
-            pub_list.append(pub)
+            pub_list.append(pub.__str__())
 
-        return pub_list
+        return '\n\n\n'.join(pub_list)
 
 ####################################################################
 
     def getPublicationsByAuthorId(self, AuthorID):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationsByAuthorId(AuthorID)
-        rel_df = RelationalQueryProcessor("sonno.db").getPublicationsByAuthorId(AuthorID)  # gp back to the correct format
+        rel_df = RelationalQueryProcessor("sonno.db").getPublicationsByAuthorId(AuthorID)  
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         pub_list = list()  
@@ -90,8 +93,8 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             publicationVenue = row["publication_venue"]
-            authors = GenericQueryProcessor.GetAuthorsList(identifier)           
-            cites_list = GenericQueryProcessor.GetCitation(identifier)
+            authors = GenericQueryProcessor.getAuthors(identifier)           
+            cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)  
             pub_list.append(pub)
 
@@ -101,7 +104,7 @@ class GenericQueryProcessor:
 
     def getMostCitedPublication(self):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getMostCitedPublication()
-        rel_df = RelationalQueryProcessor("sonno.db").getMostCitedPublication()  # gp back to the correct format
+        rel_df = RelationalQueryProcessor("sonno.db").getMostCitedPublication()  
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         pub_list = list()  
@@ -111,8 +114,8 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             publicationVenue = row["publication_venue"]
-            authors = GenericQueryProcessor.GetAuthorsList(identifier)           
-            cites_list = GenericQueryProcessor.GetCitation(identifier)
+            authors = GenericQueryProcessor.getAuthors(identifier)           
+            cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue) 
         return pub
 
@@ -120,7 +123,7 @@ class GenericQueryProcessor:
 
     def getMostCitedVenue(self):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getMostCitedVenue()
-        rel_df = RelationalQueryProcessor("sonno.db").getMostCitedVenue()  # gp back to the correct format
+        rel_df = RelationalQueryProcessor("sonno.db").getMostCitedVenue() 
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
 
@@ -136,7 +139,7 @@ class GenericQueryProcessor:
 
     def getVenuesByPublisherId(self, publisherID):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getVenuesByPublisherId(publisherID)
-        rel_df = RelationalQueryProcessor("sonno.db").getVenuesByPublisherId(publisherID)  # gp back to the correct format
+        rel_df = RelationalQueryProcessor("sonno.db").getVenuesByPublisherId(publisherID) 
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         venues_list = list()
@@ -153,7 +156,7 @@ class GenericQueryProcessor:
 ####################################################################
     def getPublicationInVenue(self, venueID):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationInVenue(venueID)
-        rel_df = RelationalQueryProcessor("sonno.db").getPublicationInVenue(venueID)  # gp back to the correct format
+        rel_df = RelationalQueryProcessor("sonno.db").getPublicationInVenue(venueID)  
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         pub_list = list()
@@ -163,8 +166,8 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             publicationVenue = row["publication_venue"]
-            authors = GenericQueryProcessor.GetAuthorsList(identifier)           
-            cites_list = GenericQueryProcessor.GetCitation(identifier)
+            authors = GenericQueryProcessor.getAuthors(identifier)           
+            cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list.append(pub)
         return pub_list
@@ -184,8 +187,8 @@ class GenericQueryProcessor:
             publicationVenue = row["publication_venue"]
             issue = row["issue"]
             volume = row["volume"]
-            authors = GenericQueryProcessor.GetAuthorsList(identifier)           
-            cites_list = GenericQueryProcessor.GetCitation(identifier)
+            authors = GenericQueryProcessor.getAuthors(identifier)           
+            cites_list = GenericQueryProcessor.getCitation(identifier)
             journalArticle = JournalArticle (identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
             journal_list.append(journalArticle)
 
@@ -206,8 +209,8 @@ class GenericQueryProcessor:
             publicationVenue = row["publication_venue"]
             issue = row["issue"]
             volume = row["volume"]
-            authors = GenericQueryProcessor.GetAuthorsList(identifier)           
-            cites_list = GenericQueryProcessor.GetCitation(identifier)
+            authors = GenericQueryProcessor.getAuthors(identifier)           
+            cites_list = GenericQueryProcessor.getCitation(identifier)
             journalArticle = JournalArticle (identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
             journal_list.append(journalArticle)
 
@@ -228,8 +231,8 @@ class GenericQueryProcessor:
             publicationVenue = row["publication_venue"]
             issue = row["issue"]
             volume = row["volume"]
-            authors = GenericQueryProcessor.GetAuthorsList(identifier)           
-            cites_list = GenericQueryProcessor.GetCitation(identifier)
+            authors = GenericQueryProcessor.getAuthors(identifier)           
+            cites_list = GenericQueryProcessor.getCitation(identifier)
             journalArticle = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
             journal_list.append(journalArticle)
 
@@ -280,8 +283,8 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             publicationVenue = row["publication_venue"]
-            authors = GenericQueryProcessor.GetAuthorsList(identifier)           
-            cites_list = GenericQueryProcessor.GetCitation(identifier)
+            authors = GenericQueryProcessor.getAuthors(identifier)           
+            cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list.append(pub)
         return pub_list
@@ -307,13 +310,14 @@ class GenericQueryProcessor:
     
 
 
-
+my_m1 = GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getCitation("doi:10.1007/s11192-019-03311-9")
+print(my_m1)
 
 #TESTER
 
 #1st method
 # my_m1 = GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getPublicationsPublishedInYear(2020)
-# print(my_m1[0].__str__())
+# print(my_m1[0])
 
 #2nd method
 # my_m2 = GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getPublicationsByAuthorId("0000-0003-0530-4305")

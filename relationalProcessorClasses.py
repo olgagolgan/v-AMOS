@@ -409,5 +409,5 @@ print("12) getPublicationsByAuthorName:\n", rel_qp.getPublicationsByAuthorName("
 print("-----------------")
 print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
 print("-----------------")
-print("14) getCitedOfPublication:\n", rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))
 """
+#print(rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023").columns)

@@ -34,8 +34,17 @@ class Publication(IdentifiableEntity):
         self.authors = authors
         self.publicationVenue = publicationVenue
     
-    def __str__(self): #additional method by Sara in order to print a Publication's class object
-        return 'Publication: ' + str(self.identifier) + ', ' + str(self.publicationYear)+ ', ' + str(self.title) + ', ' + str(self.cited) + ', ' + str(self.authors) + ', ' + str(self.publicationVenue)+ '.'
+    def __str__(self): 
+        result = list()
+        result.append('Publication:')
+        result.append(str(self.identifier))
+        result.append('publication year: ' + str(self.publicationYear))
+        result.append('title: ' + str(self.title))
+        if len(self.cited) > 0:
+            result.append('cited publications: ' + str(self.cited))
+        result.append('authors: ' + str(self.authors))
+        result.append('publication venue: ' + str(self.publicationVenue))
+        return '\n'.join(result)
 
     def getPublicationYear(self):
         return self.publicationYear

@@ -41,20 +41,6 @@ class RelationalDataProcessor(RelationalProcessor):
                     df1 = pd.DataFrame(rows_author)
                     df2 = pd.DataFrame(rows_first); df2.columns = ["doi", "coauthor_no."]
                     authorDf = df2.join(df1)
-                    
-                    """
-                    # =========== AUTHOR of PUB ================
-
-                    datum = []
-                    for doi in authors:
-                        infoList = authors[doi]
-                        #pprint(infoList)
-                        setOrcid = set()
-                        for dict in infoList:
-                            setOrcid.add(dict["orcid"])
-                        datum.append([doi, str(setOrcid)])
-                    authorDf = pd.DataFrame(datum, columns=["doi","orcid"])
-                    """
 
                     # ========== PUBLISHERS ===================
                     publishers = jsonData['publishers']
@@ -355,7 +341,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     getDistinctPublisherOfPublications: It returns a data frame with all the distinct publishers (i.e. the rows) that have published the venues of the publications with identifiers those specified as input (e.g. [ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]).
     """
 
-    def getCitedOfPublication(self, doi):
+    def getCitedPublication(self, doi):
         with connect(self.dbPath) as con: 
             query = """ SELECT doi_mention
             FROM WorksCited
@@ -374,7 +360,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             return output
 
 #rel_p = RelationalProcessor("sonno.db")
-rel_path = "sonno.db"
+rel_path = "relationalDatabase.db"
 rel_dp = RelationalDataProcessor(rel_path)
 rel_dp.setDbPath(rel_path)
 rel_dp.uploadData("data/relational_publications.csv")
@@ -408,5 +394,6 @@ print("12) getPublicationsByAuthorName:\n", rel_qp.getPublicationsByAuthorName("
 print("-----------------")
 print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
 print("-----------------")
-print(rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))
+print(rel_qp.getCitedPublication("doi:10.1162/qss_a_00023"))
 """
+print(rel_qp.getCitedPublication("doi:10.1162/qss_a_00023"))

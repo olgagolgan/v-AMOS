@@ -323,8 +323,8 @@ class GenericQueryProcessor:
 #TESTER
 
 #1st query
-my_m1 = GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getPublicationsPublishedInYear(2020)
-print(my_m1)
+# my_m1 = GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getPublicationsPublishedInYear(2020)
+# print(my_m1)
 
 #2nd query
 # my_m2 = GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getPublicationsByAuthorId("0000-0001-9773-4008")

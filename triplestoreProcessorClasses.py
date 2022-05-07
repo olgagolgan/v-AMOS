@@ -448,9 +448,9 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
 
 #TESTER
 
-# graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
-# graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")
-# graph2.uploadData("data/graph_publications.csv")
-# graph2.uploadData("data/graph_other_data.json")
-# graph3 = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph")
+graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
+graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")
+graph2.uploadData("data/graph_publications.csv")
+graph2.uploadData("data/graph_other_data.json")
+trp_qp = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph")
 # print(graph3.getCitedOfPublication("doi:10.1162/qss_a_00023"))    

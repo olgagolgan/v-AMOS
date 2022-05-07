@@ -416,7 +416,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
 
-    def getCitedOfPublication(self, publicationId):
+    def getCitedOfPublication(self, publicationId): ###BAD FORMED###
 
         qry = """
             PREFIX schema: <https://schema.org/>
@@ -428,7 +428,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                   WHERE{
                        ?y schema:citation ?doi.
                        ?y schema:productID '""" + str(publicationId) + """'
-                     }
+                    }
                  }
                      ?x schema:citation ?doi.
                      ?x schema:title ?title.
@@ -436,20 +436,21 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                      ?x schema:datePublished ?publication_year.
                      ?x schema:publishedBy ?publisher.
                      ?x schema:creator ?orcid
-                }}
+                }
         
                 ?x schema:creator ?orcid.
                 ?x schema:givenName ?given.
                 ?x schema:familyName ?family
+                }
             }"""
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
 
 #TESTER
 
-graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
-graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")
-graph2.uploadData("data/graph_publications.csv")
-graph2.uploadData("data/graph_other_data.json")
-graph3 = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph")
-print(graph3.getPublicationsByAuthorId("0000-0001-9857-1511"))    
+# graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
+# graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")
+# graph2.uploadData("data/graph_publications.csv")
+# graph2.uploadData("data/graph_other_data.json")
+# graph3 = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph")
+# print(graph3.getCitedOfPublication("doi:10.1162/qss_a_00023"))    

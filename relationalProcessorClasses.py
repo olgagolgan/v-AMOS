@@ -341,7 +341,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     getDistinctPublisherOfPublications: It returns a data frame with all the distinct publishers (i.e. the rows) that have published the venues of the publications with identifiers those specified as input (e.g. [ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]).
     """
 
-    def getCitedPublication(self, doi):
+    def getCitedOfPublication(self, doi):
         with connect(self.dbPath) as con: 
             query = """ SELECT doi_mention
             FROM WorksCited
@@ -394,5 +394,5 @@ print("12) getPublicationsByAuthorName:\n", rel_qp.getPublicationsByAuthorName("
 print("-----------------")
 print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
 print("-----------------")
-print(rel_qp.getCitedPublication("doi:10.1162/qss_a_00023"))
+print(rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))
 """

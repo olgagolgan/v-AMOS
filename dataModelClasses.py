@@ -145,6 +145,16 @@ class Proceedings(Venue):
         super().__init__(identifier, title, publisher)
         self.event = event
 
+    def __str__(self):
+        result = list()
+        result.append('Proceeding:')
+        result.append('identifier: ' + str(self.identifier))
+        result.append('title: ' + str(self.title))
+        result.append('publisher: ' + str(self.publisher))
+        result.append('event: ' + str(self.event))
+            
+        return '\n'.join(result)
+
     def getEvent(self):
         return self.event
 

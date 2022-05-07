@@ -3,6 +3,7 @@ from pandas import read_csv
 from rdflib import Graph, URIRef, RDF, Literal
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
 import json
+from dataModelClasses import *
 
 # uri's for Triplestore DB
 
@@ -157,8 +158,8 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
           ?s schema:productID ?doi.
           ?s schema:publishedBy ?publisher.
           ?s schema:isPartOf ?publication_venue.
-          ?s schema:datePublished ?publication_year.                       
-            }"""
+          ?s schema:datePublished ?publication_year                       
+        }"""
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
 
@@ -174,7 +175,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                          ?x schema:givenName ?given.
                          ?x schema:familyName ?family
                     }
-                 }           
+                }           
                   ?s schema:creator ?orcid.
                   ?s schema:title ?title.
                   ?s schema:productID ?doi.
@@ -444,6 +445,11 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
 
+#TESTER
 
+graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
+graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")
+graph2.uploadData("data/graph_publications.csv")
+graph2.uploadData("data/graph_other_data.json")
 graph3 = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph")
-print(graph3.getPublicationsPublishedInYear(2020))        
+print(graph3.getPublicationsByAuthorId("0000-0001-9857-1511"))    

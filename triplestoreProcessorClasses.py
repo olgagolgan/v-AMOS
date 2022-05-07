@@ -234,10 +234,10 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                 SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publication_year
                 WHERE {
                 {SELECT ?orcid ?given ?family
-                  WHERE{
+                WHERE{
                ?x schema:creator ?orcid.
                ?x schema:givenName ?given.
-               ?x schema:familyName ?family.
+               ?x schema:familyName ?family
                 }                          
                 }
               ?s schema:creator ?orcid.
@@ -247,7 +247,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
               ?s schema:isPartOf ?publication_venue.
               ?s schema:VirtualLocation ?venue_id.
               ?s schema:VirtualLocation '""" + str(venueId) + """'
-                        }"""
+            }"""
 
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
@@ -443,3 +443,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
             }"""
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
+
+
+graph3 = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph")
+print(graph3.getPublicationsPublishedInYear(2020))        

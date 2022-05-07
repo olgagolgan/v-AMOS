@@ -27,7 +27,7 @@ class GenericQueryProcessor:
     #ADDITIONAL METHODS FOR A BETTER CODE
     def getCitation(identifier): 
         graph_cite = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getCitedOfPublication(identifier)
-        rel_cite = RelationalQueryProcessor("sonno.db").getCitedOfPublication(identifier)  
+        rel_cite = RelationalQueryProcessor("relationalDatabase.db").getCitedOfPublication(identifier)  
         df_cite = concat([graph_cite, rel_cite], ignore_index=True)
         df_cite_no_dupl = df_cite.drop_duplicates()
         cites_list = []
@@ -43,7 +43,7 @@ class GenericQueryProcessor:
 
     def getAuthors(identifier):
         graph_au = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationAuthors(identifier)
-        rel_au = RelationalQueryProcessor("sonno.db").getPublicationAuthors(identifier) 
+        rel_au = RelationalQueryProcessor("relationalDatabase.db").getPublicationAuthors(identifier) 
         df_au = concat([graph_au, rel_au], ignore_index=True)
         df_au_no_dupl = df_au.drop_duplicates()
         authors = set()
@@ -60,7 +60,7 @@ class GenericQueryProcessor:
 
     def getPublicationsPublishedInYear(self, year):
         graph_year = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationsPublishedInYear(year)
-        rel_year = RelationalQueryProcessor("sonno.db").getPublicationsPublishedInYear(year)  
+        rel_year = RelationalQueryProcessor("relationalDatabase.db").getPublicationsPublishedInYear(year)  
         df_union = concat([graph_year, rel_year], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         df_union_sorted = df_union_no_dupl.sort_values("publication_year")
@@ -82,7 +82,7 @@ class GenericQueryProcessor:
 
     def getPublicationsByAuthorId(self, AuthorID):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationsByAuthorId(AuthorID)
-        rel_df = RelationalQueryProcessor("sonno.db").getPublicationsByAuthorId(AuthorID)  
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getPublicationsByAuthorId(AuthorID)  
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         pub_list = list()  
@@ -103,7 +103,7 @@ class GenericQueryProcessor:
 
     def getMostCitedPublication(self):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getMostCitedPublication()
-        rel_df = RelationalQueryProcessor("sonno.db").getMostCitedPublication()  
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getMostCitedPublication()  
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
 
@@ -122,7 +122,7 @@ class GenericQueryProcessor:
 
     def getMostCitedVenue(self):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getMostCitedVenue()
-        rel_df = RelationalQueryProcessor("sonno.db").getMostCitedVenue() 
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getMostCitedVenue() 
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
 
@@ -139,7 +139,7 @@ class GenericQueryProcessor:
 
     def getVenuesByPublisherId(self, publisherID):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getVenuesByPublisherId(publisherID)
-        rel_df = RelationalQueryProcessor("sonno.db").getVenuesByPublisherId(publisherID) 
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getVenuesByPublisherId(publisherID) 
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         venues_list = list()
@@ -156,7 +156,7 @@ class GenericQueryProcessor:
 ####################################################################
     def getPublicationInVenue(self, venueID):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationInVenue(venueID)
-        rel_df = RelationalQueryProcessor("sonno.db").getPublicationInVenue(venueID)  
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getPublicationInVenue(venueID)  
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         pub_list = list()
@@ -176,7 +176,7 @@ class GenericQueryProcessor:
 ####################################################################
     def getJournalArticlesInIssue(self, issue, volume, journalID):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getJournalArticlesInIssue(issue, volume, journalID)
-        rel_df = RelationalQueryProcessor("sonno.db").getJournalArticlesInIssue(issue, volume, journalID)
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getJournalArticlesInIssue(issue, volume, journalID)
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         journal_list = list()
@@ -196,7 +196,7 @@ class GenericQueryProcessor:
 ####################################################################
     def getJournalArticlesInVolume(self, volume, journalID):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getJournalArticlesInVolume(volume, journalID)
-        rel_df = RelationalQueryProcessor("sonno.db").getJournalArticlesInVolume(volume, journalID)
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getJournalArticlesInVolume(volume, journalID)
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         journal_list = list()
@@ -217,7 +217,7 @@ class GenericQueryProcessor:
 ####################################################################
     def getJournalArticlesInJournal(self, journalID):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getJournalArticlesInJournal(journalID)
-        rel_df = RelationalQueryProcessor("sonno.db").getJournalArticlesInJournal(journalID)
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getJournalArticlesInJournal(journalID)
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         journal_list = list()
@@ -239,7 +239,7 @@ class GenericQueryProcessor:
 ####################################################################
     def getProceedingsByEvent(self, eventPartialName):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getProceedingsByEvent(eventPartialName)
-        rel_df = RelationalQueryProcessor("sonno.db").getProceedingsByEvent(eventPartialName)
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getProceedingsByEvent(eventPartialName)
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         proceedings_list = list()
@@ -256,7 +256,7 @@ class GenericQueryProcessor:
 ####################################################################
     def getPublicationAuthors(self, publicationID):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationAuthors(publicationID)
-        rel_df = RelationalQueryProcessor("sonno.db").getPublicationAuthors(publicationID)  
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getPublicationAuthors(publicationID)  
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         authors = list()
@@ -272,7 +272,7 @@ class GenericQueryProcessor:
 ####################################################################
     def getPublicationsByAuthorName(self, partialAuthorName):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getPublicationsByAuthorName(partialAuthorName)
-        rel_df = RelationalQueryProcessor("sonno.db").getPublicationsByAuthorName(partialAuthorName)  
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getPublicationsByAuthorName(partialAuthorName)  
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         pub_list = list()
@@ -290,7 +290,7 @@ class GenericQueryProcessor:
 ####################################################################
     def getDistinctPublisherOfPublications(self, listOfPublication):
         graph_df = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph").getDistinctPublisherOfPublications(listOfPublication)
-        rel_df = RelationalQueryProcessor("sonno.db").getDistinctPublisherOfPublications(listOfPublication)  
+        rel_df = RelationalQueryProcessor("relationalDatabase.db").getDistinctPublisherOfPublications(listOfPublication)  
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         organizations_list = list()
@@ -333,8 +333,8 @@ class GenericQueryProcessor:
 # print(my_m6)
 
 #7th query
-my_m7 = GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getJournalArticlesInIssue(3, 28, "issn:1066-8888")
-print(my_m7)
+# my_m7 = GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getJournalArticlesInIssue(3, 28, "issn:1066-8888")
+# print(my_m7)
 
 #8th query
 # my_m8 = GenericQueryProcessor([TriplestoreQueryProcessor, RelationalQueryProcessor]).getJournalArticlesInVolume(28, "issn:1066-8888")

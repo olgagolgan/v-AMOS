@@ -396,4 +396,5 @@ print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOf
 print("-----------------")
 print(rel_qp.getCitedPublication("doi:10.1162/qss_a_00023"))
 """
-print(rel_qp.getCitedPublication("doi:10.1162/qss_a_00023"))
+print("6) getPublicationInVenue:\n", rel_qp.getPublicationInVenue("issn:0944-1344").columns)
+print("-----------------")

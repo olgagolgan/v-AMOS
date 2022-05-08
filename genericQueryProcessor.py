@@ -329,7 +329,7 @@ generic = GenericQueryProcessor([rel_qp, trp_qp])
 # print(my_m1)
 
 #2nd query
-# my_m2 = generic.getPublicationsByAuthorId("0000-0001-9773-4008")
+# my_m2 = generic.getPublicationsByAuthorId("0000-0001-7553-6916")
 # print(my_m2)
 
 #3rd query

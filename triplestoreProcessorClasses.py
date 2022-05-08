@@ -416,7 +416,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
 
-    def getCitedOfPublication(self, publicationId): ###BAD FORMED###
+    def getCitedOfPublication(self, publicationId): 
 
         qry = """
             PREFIX schema: <https://schema.org/>
@@ -436,13 +436,14 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                      ?x schema:datePublished ?publication_year.
                      ?x schema:publishedBy ?publisher.
                      ?x schema:creator ?orcid
+                    }
+
                 }
-        
                 ?x schema:creator ?orcid.
                 ?x schema:givenName ?given.
                 ?x schema:familyName ?family
-                }
-            }"""
+            }
+            """
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
 

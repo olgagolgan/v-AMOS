@@ -62,7 +62,17 @@ class Publication(IdentifiableEntity):
         return self.publicationVenue
 
     def getAuthors(self):
-        return self.authors  
+        return self.authors
+
+    """
+    def getAuthor(self.authors):
+    listAuthors = []
+    for person in self.authors:
+        infoList = person.split(", ")
+        author = Person(infoList[0], infoList[1], infoList[2])
+        listAuthors.append(author)
+    return listAuthors
+    """  
 
 
 # sara's classes

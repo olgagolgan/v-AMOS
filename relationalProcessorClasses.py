@@ -91,31 +91,37 @@ class RelationalDataProcessor(RelationalProcessor):
                 csvData = pd.read_csv(path)
 
                 # ========= PUBLICATION ==============
-                publication = csvData[["id","title","publication_year", "publication_venue"]]
+                publicationRaw = csvData[["id","title","publication_year", "publication_venue"]]
+                publication = publicationRaw.copy()
                 publication.rename(columns = {'id':'doi'}, inplace = True)
 
                 # ========= JOURNAL ARTICLE ==============
-                journal_articles = csvData.query("type == 'journal-article'")
-                journal_articles = journal_articles[["id","issue","volume"]]
+                journal_articlesRaw = csvData.query("type == 'journal-article'")
+                journal_articlesRaw = journal_articlesRaw[["id","issue","volume"]]
+                journal_articles = journal_articlesRaw.copy()
                 journal_articles.rename(columns = {'id':'doi'}, inplace = True)
 
                 # ========= BOOK CHAPTER ============== 
-                book_chapter = csvData.query("type == 'book-chapter'")
-                book_chapter = book_chapter[["id","chapter"]]
+                book_chapterRaw = csvData.query("type == 'book-chapter'")
+                book_chapterRaw = book_chapterRaw[["id","chapter"]]
+                book_chapter = book_chapterRaw.copy()
                 book_chapter.rename(columns = {'id':'doi'}, inplace = True)
 
                 # ========= PROCEEDINGS PAPER ============== 
-                proceedings_paper = csvData.query("type == 'proceedings-paper'")
-                proceedings_paper = proceedings_paper[["id"]]
+                proceedings_paperRaw = csvData.query("type == 'proceedings-paper'")
+                proceedings_paperRaw = proceedings_paperRaw[["id"]]
+                proceedings_paper = proceedings_paperRaw.copy()
                 proceedings_paper.rename(columns = {'id':'doi'}, inplace = True)
 
                 # ========= VENUE NAME  ==============
-                venueNamesPub = csvData[["id","title","publication_year", "publisher"]]
+                venueNamesPubRaw = csvData[["id","title","publication_year", "publisher"]]
+                venueNamesPub = venueNamesPubRaw.copy()
                 venueNamesPub.rename(columns = {'id':'doi'}, inplace = True)
 
                 # ========= PROCEEDINGS ============== 
-                proceedings = csvData.query("venue_type == 'proceeding'")
-                proceedings = proceedings[["id","publication_venue", "publisher", "event"]]
+                proceedingsRaw = csvData.query("venue_type == 'proceeding'")
+                proceedingsRaw = proceedingsRaw[["id","publication_venue", "publisher", "event"]]
+                proceedings = proceedingsRaw.copy()
                 proceedings.rename(columns = {'id':'doi'}, inplace = True)
 
                 with connect(self.dbPath) as con:

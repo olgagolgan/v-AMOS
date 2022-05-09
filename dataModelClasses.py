@@ -1,22 +1,3 @@
-
-# import json
-# import csv
-#
-# file_csv = "graph_publications.csv"
-# file_json = "graph_other_data.json"
-#
-# jsonfile = open(file_json, mode="r", encoding="utf-8")
-# datajson = json.load(jsonfile)
-#
-# dataCsv = list()
-#
-# with open(file_csv, "r", encoding="utf-8") as file:
-#     csvReader = csv.reader(file)
-#     next(csvReader)
-#     for line in csvReader:
-#         dataCsv.append(tuple(line))
-
-
 class IdentifiableEntity:
     def __init__(self, identifier):
         self.identifier = identifier
@@ -43,11 +24,10 @@ class Publication(IdentifiableEntity):
         result.append('authors: ' + str(self.authors))
         result.append('publication venue: ' + str(self.publicationVenue))
         if len(self.cited) > 0:
-            result.append('cited publications:' + str('\n'.join(self.cited)))
+            result.append('cited publications:' + str(self.cited))
         else:
             result.append('cited publications: None')
-
-        return '\n'.join(result)
+        return result
 
     def getPublicationYear(self):
         return self.publicationYear
@@ -61,11 +41,15 @@ class Publication(IdentifiableEntity):
     def getPublicationVenue(self):
         return self.publicationVenue
 
-    def getAuthors(self):
-        return self.authors  
+    def getAuthor(self):
+        listAuthors = []
+        for person in self.authors:
+            infoList = person.split(", ")
+            author = Person(infoList[0], infoList[1], infoList[2])
+            listAuthors.append(author)
+        return listAuthors
 
 
-# sara's classes
 class JournalArticle(Publication):
     def __init__(self, identifier, publicationYear, title, cited, authors, publicationVenue, issue, volume):
         super().__init__(identifier, publicationYear, title, cited, authors, publicationVenue)
@@ -83,11 +67,10 @@ class JournalArticle(Publication):
         result.append('issue: ' + str(self.issue))
         result.append('volume: ' + str(self.volume))
         if len(self.cited) > 0:
-            result.append('cited publications:' + str('\n'.join(self.cited)))
+            result.append('cited publications:' + str(self.cited))
         else:
             result.append('cited publications: None')
-            
-        return '\n'.join(result)   
+        return result
 
     def getIssue(self):
         return self.issue
@@ -109,7 +92,6 @@ class ProceedingsPaper(Publication):
     pass
 
 
-# manu's classes
 class Venue(IdentifiableEntity):
     def __init__(self, identifier, title, publisher):
         super().__init__(identifier)
@@ -122,8 +104,7 @@ class Venue(IdentifiableEntity):
         result.append('identifier: ' + str(self.identifier))
         result.append('title: ' + str(self.title))
         result.append('publisher: ' + str(self.publisher))
-            
-        return '\n'.join(result) 
+        return result
         
     def getTitle(self):
         return self.title
@@ -152,14 +133,12 @@ class Proceedings(Venue):
         result.append('title: ' + str(self.title))
         result.append('publisher: ' + str(self.publisher))
         result.append('event: ' + str(self.event))
-            
-        return '\n'.join(result)
+        return result
 
     def getEvent(self):
         return self.event
 
 
-# amelia's classes
 class Person(IdentifiableEntity):
     def __init__(self, identifier, givenName, familyName):
         super().__init__(identifier)
@@ -172,8 +151,7 @@ class Person(IdentifiableEntity):
         result.append('identifier: ' + str(self.identifier))
         result.append('given name: ' + str(self.givenName))
         result.append('family name: ' + str(self.familyName))
-            
-        return '\n'.join(result) 
+        return result
 
     def getGivenName(self):
         return self.givenName
@@ -192,8 +170,7 @@ class Organization(IdentifiableEntity):
         result.append('Organization:')
         result.append('identifier: ' + str(self.identifier))
         result.append('name: ' + str(self.name))
-            
-        return '\n'.join(result)
+        return result
 
     def getName(self):
         return self.name

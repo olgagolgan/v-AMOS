@@ -2,113 +2,66 @@ from relationalProcessorClasses import *
 from triplestoreProcessorClasses import *
 from pandas import concat
 
+def getStatByAuthorId(AuthorID):
+        graph_df = trp_qp.getPublicationsByAuthorId(AuthorID)
+        rel_df = rel_qp.getPublicationsByAuthorId(AuthorID)
+        df_union = concat([graph_df, rel_df], ignore_index=True)
+        df_union_no_dupl = df_union.drop_duplicates()
 
-## METHODS FOR DESCRIPTIVE STATISTICS PURPOSES ##
+        median = df_union_no_dupl["publication_year"].median()
+        mean = df_union_no_dupl["publication_year"].mean()
+        most_recent = df_union_no_dupl["publication_year"].max()
+        less_recent = df_union_no_dupl["publication_year"].min()
 
-def getPublicationsPublishedInYear(year):
+        return 'The median of the publication year of the author with id ' + str(AuthorID) + ' is: ' + str(
+                median) + '. The mean is: ' + str(mean) + '. The most recent year of publication is: ' + str(
+                most_recent) + ' and the less recent is: ' + str(less_recent)
+
+def getPublicationsStatInYear(year):
         graph_year = trp_qp.getPublicationsPublishedInYear(year)
         rel_year = rel_qp.getPublicationsPublishedInYear(year)  
         df_union = concat([graph_year, rel_year], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
-
-def getPublicationsByAuthorId(AuthorID):
-        graph_df = trp_qp.getPublicationsByAuthorId(AuthorID)
-        rel_df = rel_qp.getPublicationsByAuthorId(AuthorID)  
-        df_union = concat([graph_df, rel_df], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
-
-def getMostCitedPublication():
-        graph_df = trp_qp.getMostCitedPublication()
-        rel_df = rel_qp.getMostCitedPublication()  
-        df_union = concat([graph_df, rel_df], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
-
-def getVenuesByPublisherId(publisherID):
-        graph_df = trp_qp.getVenuesByPublisherId(publisherID)
-        rel_df = rel_qp.getVenuesByPublisherId(publisherID) 
-        df_union = concat([graph_df, rel_df], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
-
-def getPublicationInVenue(venueID):
-        graph_df = trp_qp.getPublicationInVenue(venueID)
-        rel_df = rel_qp.getPublicationInVenue(venueID)  
-        df_union = concat([graph_df, rel_df], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
-
-def getJournalArticlesInIssue(self, issue, volume, journalID):
-        graph_df = trp_qp.getJournalArticlesInIssue(issue, volume, journalID)
-        rel_df = rel_qp.getJournalArticlesInIssue(issue, volume, journalID)
-        df_union = concat([graph_df, rel_df], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
-
-def getJournalArticlesInVolume(volume, journalID):
-        graph_df = trp_qp.getJournalArticlesInVolume(volume, journalID)
-        rel_df = rel_qp.getJournalArticlesInVolume(volume, journalID)
-        df_union = concat([graph_df, rel_df], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
-
-def getJournalArticlesInJournal(journalID):
-        graph_df = trp_qp.getJournalArticlesInJournal(journalID)
-        rel_df = rel_qp.getJournalArticlesInJournal(journalID)
-        df_union = concat([graph_df, rel_df], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
-
-def getMostCitedVenue():
-        graph_df = trp_qp.getMostCitedVenue()
-        rel_df = rel_qp.getMostCitedVenue() 
-        df_union = concat([graph_df, rel_df], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
-
-def getProceedingsByEvent(eventPartialName):
-        graph_df = trp_qp.getProceedingsByEvent(eventPartialName)
-        rel_df = rel_qp.getProceedingsByEvent(eventPartialName)
-        df_union = concat([graph_df, rel_df], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
-
-def getPublicationAuthors(publicationID):
-        graph_df = trp_qp.getPublicationAuthors(publicationID)
-        rel_df = rel_qp.getPublicationAuthors(publicationID)  
-        df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
-        final_df = df_union_no_dupl.sort_values("family")
-        return final_df
 
-def getPublicationsByAuthorName(partialAuthorName):
-        graph_df = trp_qp.getPublicationsByAuthorName(partialAuthorName)
-        rel_df = rel_qp.getPublicationsByAuthorName(partialAuthorName)  
-        df_union = concat([graph_df, rel_df], ignore_index=True)
-        final_df = df_union.drop_duplicates()
-        return final_df
+        pub_number = df_union_no_dupl["title"].value_counts()
 
-#################################
+        return pub_number
 
-# my_df = getPublicationsByAuthorId("0000-0001-9773-4008")
-# print('The median of the publication year filtered by an author id:')
-# print(my_df["publication_year"].median())
-# print('--------')
+def getBestVenuesInYear(year):
+        graph_year = trp_qp.getPublicationsPublishedInYear(year)
+        rel_year = rel_qp.getPublicationsPublishedInYear(year)
+        df_union = concat([graph_year, rel_year], ignore_index=True)
+        df_union_no_dupl = df_union.drop_duplicates()
+        final_df = df_union_no_dupl["publication_venue"].value_counts()[:3]
 
-# my_df1 = getPublicationsPublishedInYear(2020)
-# print('The titles' count of the publications published in a selected year:')
-# print(my_df1["title"].value_counts())
-# #my_df1.plot(kind="bar")
-# print('--------')
+        return "Top three venues with related number of publications in year " + str(year), final_df
 
-# my_df2 = getPublicationsByAuthorId("0000-0003-0530-4305")
-# print('The mode of the publication for a selected author is:')
-# print(my_df2.mode(axis='columns', dropna=False))
-# print('--------')
 
-# my_df3 = getJournalArticlesInJournal("issn:1066-8888")
-# print('The authors' count of the journal article of a specified journal :')
-# print(my_df3["family"].value_counts())
-# #my_df1.plot(kind="bar")
+def getBestAuthorsInYear(year):
+        graph_year = trp_qp.getPublicationsPublishedInYear(year)
+        rel_year = rel_qp.getPublicationsPublishedInYear(year)
+        df_union = concat([graph_year, rel_year], ignore_index=True)
+        df_union_no_dupl = df_union.drop_duplicates()
+        final_df = df_union_no_dupl["family"].value_counts()[:3]
+
+        return "Top three authors (surname) with related number of publications in year " + str(year), final_df
+
+
+## STATISTICS ##
+
+# my_m12 = getStatByAuthorId("0000-0001-9857-1511")
+# print(my_m12)
+
+# my_m13 = getPublicationsStatInYear(2020)
+# print("The output of the method getPublicationsStatInYear with 2020 as input will be:")
+# print(my_m13)
+# print("-------")
+
+# my_m14 = getBestAuthorsInYear(2020)
+# print("The output of the method getBestAuthorsInYear with 2020 as input will be:")
+# print(my_m14)
+# print("-------")
+
+# my_m15 = getBestVenuesInYear(2020)
+# print("The output of the method getBestVenuesInYear with 2020 as input will be:")
+# print(my_m15)

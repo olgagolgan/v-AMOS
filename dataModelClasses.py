@@ -48,6 +48,18 @@ class Publication(IdentifiableEntity):
             author = Person(infoList[0], infoList[1], infoList[2])
             listAuthors.append(author)
         return listAuthors
+    def getAuthors(self):
+        return self.authors
+
+    """
+    def getAuthor(self.authors):
+    listAuthors = []
+    for person in self.authors:
+        infoList = person.split(", ")
+        author = Person(infoList[0], infoList[1], infoList[2])
+        listAuthors.append(author)
+    return listAuthors
+    """  
 
 
 class JournalArticle(Publication):

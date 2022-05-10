@@ -3,45 +3,6 @@ from relationalProcessorClasses import *
 from triplestoreProcessorClasses import *
 from genericQueryProcessor import *
 
-# =========== RELATIONAL DB
-"""
-print("1) getPublicationsPublishedInYear:\n",rel_qp.getPublicationsPublishedInYear(2020))
-print("-----------------")
-print("2) getPublicationsByAuthorId:\n",rel_qp.getPublicationsByAuthorId("0000-0001-9857-1511"))
-print("-----------------")
-print("3) getMostCitedPublication:\n", rel_qp.getMostCitedPublication())
-print("-----------------")
-print("4) getMostCitedVenue:\n", rel_qp.getMostCitedVenue())
-print("-----------------")
-print("5) getVenuesByPublisherId:\n", rel_qp.getVenuesByPublisherId("crossref:78"))
-print("-----------------")
-print("6) getPublicationInVenue:\n", rel_qp.getPublicationInVenue("issn:0944-1344"))
-print("-----------------")
-print("7) getJournalArticlesInIssue:\n", rel_qp.getJournalArticlesInIssue(9, 17, "issn:2164-5515"))
-print("-----------------")
-print("8) getJournalArticlesInVolume:\n", rel_qp.getJournalArticlesInVolume(17, "issn:2164-5515"))
-print("-----------------")
-print("9) getJournalArticlesInJournal:\n", rel_qp.getJournalArticlesInJournal("issn:2164-5515"))
-print("-----------------")
-print("10) getProceedingsByEvent:\n", rel_qp.getProceedingsByEvent("meet"))
-print("-----------------")
-print("11) getPublicationAuthors:\n", rel_qp.getPublicationAuthors("doi:10.1080/21645515.2021.1910000"))
-print("-----------------")
-print("12) getPublicationsByAuthorName:\n", rel_qp.getPublicationsByAuthorName("iv"))
-print("-----------------")
-print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
-print("-----------------")
-print(rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))
-print("-----------------")
-print(rel_qp.getVenuesInfoByDoi("doi:10.1007/s11192-019-03217-6"))
-"""
-
-# =============== TRIPLESTORE
-
-
-#print(graph3.getCitedOfPublication("doi:10.1162/qss_a_00023"))    
-#print(trp_qp.getPublicationsPublishedInYear(2020))
-
 # ================ GENERIC
 
 #1st query

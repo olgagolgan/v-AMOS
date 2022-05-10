@@ -54,6 +54,21 @@ class GenericQueryProcessor:
             author = str(orcid) + ", " + str(givenName) + ", " + str(familyName)
             authors.add(author)
         return authors
+    
+    def getInfoVenuePub(identifier):
+        graph_venpub = trp_qp.getVenuesInfoByDoi(identifier)
+        rel_venpub = rel_qp.getVenuesInfoByDoi(identifier)
+        df_venpub = concat([graph_venpub, rel_venpub], ignore_index=True)
+        df_venpub = df_venpub.drop_duplicates()
+        venuesIdList = []
+        for el in df_venpub["venue_id"]:
+            venuesIdList.append(el)
+        venuesId = ", ".join(venuesIdList)
+        venueName = df_venpub["publication_venue"][0]
+        pubId = df_venpub["id"][0]
+        pubName = df_venpub["name"][0]
+        listInfoVen = [venuesId, venueName, [pubId, pubName]]
+        return listInfoVen
 
     # METHODS
 
@@ -374,8 +389,10 @@ generic = GenericQueryProcessor([rel_qp, trp_qp])
 # print(my_m11[1][0].getCitedPublications())
 # print("-----------------------------------")
 
-#12th query
-# my_m12 = generic.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ])
-# print(my_m12)
-# print("-----------------------------------")
-# print(my_m12[1][0].getName())
+"""
+12th query
+my_m12 = generic.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ])
+print(my_m12)
+print("-----------------------------------")
+print(my_m12[1][0].getName())
+"""

@@ -40,15 +40,16 @@ class Publication(IdentifiableEntity):
         return self.cited 
 
     def getPublicationVenue(self):
-        return self.publicationVenue
+        venueOfPub = Venue(self.publicationVenue[0],self.publicationVenue[1],self.publicationVenue[2])
+        return venueOfPub
 
     def getAuthor(self):
-        listAuthors = []
+        setAuthors = {}
         for person in self.authors:
             infoList = person.split(", ")
             author = Person(infoList[0], infoList[1], infoList[2])
-            listAuthors.append(author)
-        return listAuthors
+            setAuthors.add(author)
+        return setAuthors
 
 class JournalArticle(Publication):
     def __init__(self, identifier, publicationYear, title, cited, authors, publicationVenue, issue, volume):

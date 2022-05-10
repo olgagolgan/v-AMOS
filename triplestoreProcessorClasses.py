@@ -52,7 +52,7 @@ class TriplestoreProcessor:
 
 class TriplestoreDataProcessor(TriplestoreProcessor):
     def __init__(self, endpointUri):
-        super().__init__(endpointUri+"/sparql")
+        super().__init__(endpointUri + "/sparql")
 
     def uploadData(self, path):
         if path != "":
@@ -384,7 +384,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                 ?x schema:title ?title.
                 ?x schema:datePublished ?publication_year.
                 ?x schema:isPartOf ?publication_venue.
-                
+
             {
                 SELECT ?orcid ?given ?family
                 WHERE
@@ -402,7 +402,6 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         return df_sparql
 
     def getDistinctPublisherOfPublications(self, pubIdList):
-        
         listOfTarget = ''
         for pubId in pubIdList:
             listOfTarget = listOfTarget + '"' + pubId + '" '
@@ -425,8 +424,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
 
-    def getCitedOfPublication(self, publicationId): 
-
+    def getCitedOfPublication(self, publicationId):
         qry = """
             PREFIX schema: <https://schema.org/>
             SELECT ?doi ?orcid ?given ?family ?title ?publication_venue ?publisher ?publication_year
@@ -456,44 +454,11 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
 
-    def getVenuesInfoByDoi(self, doi):
-        qry = """
-                PREFIX schema: <https://schema.org/>
-        SELECT DISTINCT ?venue_id ?publication_venue ?publisher
-        WHERE
-        {
-        {SELECT ?publication_venue
-        WHERE
-        {
-        ?s schema:isPartOf ?publication_venue.
-        ?s schema:publishedBy ?publisher.
-        ?s schema:productID ?doi.
-        ?s schema:productID '""" + str(doi) + """'
-        }
-        }
-        ?s schema:isPartOf ?publication_venue.
-        ?s schema:VirtualLocation ?venue_id.
-        ?s schema:publishedBy ?publisher
-        }
-        """
-        df1_sparql = get(self.endpointUri, qry, True)
-        crossref = df1_sparql.loc[0]["publisher"]  #Probabilmente critico ******
-        qry2= """PREFIX schema: <https://schema.org/>
-        SELECT ?name
-        WHERE{
-        ?x schema:name ?name.
-        ?x schema:identifier ?id.
-        ?x schema:identifier '""" + str(crossref) + """'}"""
-        df2_sparql = get(self.endpointUri, qry2, True)
-        df_sparql = df1_sparql.join(df2_sparql)
-        return df_sparql
-    
-    def getPubNameById(self, crossref):
-        qry = """PREFIX schema: <https://schema.org/>
-            SELECT ?id ?name
-            WHERE{
-            ?x schema:name ?name.
-            ?x schema:identifier ?id.
-            ?x schema:identifier '"""+str(crossref)+"""'}"""
-        df_sparql = get(self.endpointUri, qry, True)
-        return df_sparql
+
+# TESTER
+
+graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
+graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")
+graph2.uploadData("data/graph_publications.csv")
+graph2.uploadData("data/graph_other_data.json")
+trp_qp = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph")

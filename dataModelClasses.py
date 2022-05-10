@@ -3,8 +3,7 @@ class IdentifiableEntity:
         self.identifier = identifier
 
     def getIds(self):
-        idList = self.identifier.split(", ")
-        return idList
+        return list(self.identifier)
 
 
 class Publication(IdentifiableEntity):
@@ -15,8 +14,8 @@ class Publication(IdentifiableEntity):
         self.cited = cited
         self.authors = authors
         self.publicationVenue = publicationVenue
-    
-    def __str__(self): 
+
+    def __str__(self):
         result = list()
         result.append('Publication:')
         result.append(str(self.identifier))
@@ -28,7 +27,7 @@ class Publication(IdentifiableEntity):
             result.append('cited publications:' + str(self.cited))
         else:
             result.append('cited publications: None')
-        return str(result)
+        return result
 
     def getPublicationYear(self):
         return self.publicationYear
@@ -37,33 +36,40 @@ class Publication(IdentifiableEntity):
         return self.title
 
     def getCitedPublications(self):
-        citedlist = list()
-        citedlist_object = list()
-        for citation in self.cited:
-            citedpub = Publication(citation[0], citation[1], citation[2], ["unavailable"], citation[3], citation[4])
-            citedlist.append(citedpub.__str__())
-            citedlist_object.append(citedpub)
-        return citedlist, citedlist_object
+        return self.cited
 
     def getPublicationVenue(self):
-        venueOfPub = Venue(self.publicationVenue[0],self.publicationVenue[1],self.publicationVenue[2])
-        return venueOfPub
+        return self.publicationVenue
 
     def getAuthor(self):
-        setAuthors = {}
+        listAuthors = []
         for person in self.authors:
             infoList = person.split(", ")
             author = Person(infoList[0], infoList[1], infoList[2])
-            setAuthors.add(author)
-        return setAuthors
+            listAuthors.append(author)
+        return listAuthors
+
+    def getAuthors(self):
+        return self.authors
+
+
+    # def getAuthor(self.authors):
+    # listAuthors = []
+    # for person in self.authors:
+    #     infoList = person.split(", ")
+    #     author = Person(infoList[0], infoList[1], infoList[2])
+    #     listAuthors.append(author)
+    # return listAuthors
+    
+
 
 class JournalArticle(Publication):
     def __init__(self, identifier, publicationYear, title, cited, authors, publicationVenue, issue, volume):
         super().__init__(identifier, publicationYear, title, cited, authors, publicationVenue)
         self.issue = issue
         self.volume = volume
-    
-    def __str__(self): 
+
+    def __str__(self):
         result = list()
         result.append('Journal Article:')
         result.append('identifier: ' + str(self.identifier))
@@ -77,7 +83,7 @@ class JournalArticle(Publication):
             result.append('cited publications:' + str(self.cited))
         else:
             result.append('cited publications: None')
-        return str(result)
+        return result
 
     def getIssue(self):
         return self.issue
@@ -104,21 +110,20 @@ class Venue(IdentifiableEntity):
         super().__init__(identifier)
         self.title = title
         self.publisher = publisher
-    
+
     def __str__(self):
         result = list()
         result.append('Venue:')
         result.append('identifier: ' + str(self.identifier))
         result.append('title: ' + str(self.title))
         result.append('publisher: ' + str(self.publisher))
-        return str(result)
-        
+        return result
+
     def getTitle(self):
         return self.title
 
     def getPublisher(self):
-        publisher = Organization(self.publisher[0], self.publisher[1])
-        return publisher
+        return self.publisher
 
 
 class Journal(Venue):
@@ -141,7 +146,7 @@ class Proceedings(Venue):
         result.append('title: ' + str(self.title))
         result.append('publisher: ' + str(self.publisher))
         result.append('event: ' + str(self.event))
-        return str(result)
+        return result
 
     def getEvent(self):
         return self.event
@@ -152,14 +157,14 @@ class Person(IdentifiableEntity):
         super().__init__(identifier)
         self.givenName = givenName
         self.familyName = familyName
-    
+
     def __str__(self):
         result = list()
         result.append('Person:')
         result.append('identifier: ' + str(self.identifier))
         result.append('given name: ' + str(self.givenName))
         result.append('family name: ' + str(self.familyName))
-        return str(result)
+        return result
 
     def getGivenName(self):
         return self.givenName
@@ -172,13 +177,13 @@ class Organization(IdentifiableEntity):
     def __init__(self, identifier, name):
         super().__init__(identifier)
         self.name = name
-    
+
     def __str__(self):
         result = list()
         result.append('Organization:')
         result.append('identifier: ' + str(self.identifier))
         result.append('name: ' + str(self.name))
-        return str(result)
+        return result
 
     def getName(self):
         return self.name

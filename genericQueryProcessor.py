@@ -26,7 +26,7 @@ class GenericQueryProcessor:
 
     def getCitation(identifier):
         graph_cite = trp_qp.getCitedOfPublication(identifier)
-        rel_cite = rel_qp.getCitedOfPublication(identifier)  
+        rel_cite = rel_qp.getCitedOfPublication(identifier)
         df_cite = concat([graph_cite, rel_cite], ignore_index=True)
         df_cite_no_dupl = df_cite.drop_duplicates()
         cites_list = []
@@ -35,94 +35,85 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             publicationVenue = row["publication_venue"]
-            authors = GenericQueryProcessor.getAuthors(identifier)  
-            cited_pub = [identifier, publicationYear, title, authors, publicationVenue]   
-            cites_list.append(cited_pub)
+            authors = GenericQueryProcessor.getAuthors(identifier)
+            cited_pub = Publication(identifier, publicationYear, title, "", authors, publicationVenue)
+            cites_list.append(cited_pub.__str__())
         return cites_list
+
+    def getPublishers(self, identifier):
+        graph_df = trp_qp.getVenuesByPublisherId(identifier)
+        rel_df = rel_qp.getVenuesByPublisherId(identifier) 
+        df_union = concat([graph_df, rel_df], ignore_index=True)
+        df_union_no_dupl = df_union.drop_duplicates()
+        organizations_list = list()
+        for row_idx, row in df_union_no_dupl.iterrows():
+            identifier = row["id"]
+            publisher_name = row["name"]
+            organization = Organization(identifier, publisher_name)
+        
+        organizations_list.append(organization.__str__())
+        return organizations_list
 
     def getAuthors(identifier):
         graph_au = trp_qp.getPublicationAuthors(identifier)
-        rel_au = rel_qp.getPublicationAuthors(identifier) 
+        rel_au = rel_qp.getPublicationAuthors(identifier)
         df_au = concat([graph_au, rel_au], ignore_index=True)
         df_au_no_dupl = df_au.drop_duplicates()
-        authors = list()
+        authors = set()
         for row_idx, row in df_au_no_dupl.iterrows():
             orcid = row["orcid"]
             givenName = row["given"]
             familyName = row["family"]
             author = str(orcid) + ", " + str(givenName) + ", " + str(familyName)
-            authors.append(author)
+            authors.add(author)
         return authors
-    
-    def getInfoVenuePub(identifier):
-        graph_venpub = trp_qp.getVenuesInfoByDoi(identifier)
-        graph_venpub.columns = ['venue_id', 'publication_venue', 'id', 'name']
-        rel_venpub = rel_qp.getVenuesInfoByDoi(identifier)
-        df_venpub = concat([graph_venpub, rel_venpub], ignore_index=True)
-        df_venpub = df_venpub.drop_duplicates()
-        venuesIdList = []
-        for el in df_venpub["venue_id"]:
-            venuesIdList.append(el)
-        venuesId = ", ".join(venuesIdList)
-        venueName = df_venpub["publication_venue"][0]
-        pubId = df_venpub["id"][0]
-        pubName = df_venpub["name"][0]
-        listInfoVen = [venuesId, venueName, [pubId, pubName]]
-        return listInfoVen
 
-    def getInfoPublisher(identifier):
-        graph_pub = trp_qp.getPubNameById(identifier)
-        rel_pub = rel_qp.getPubNameById(identifier)
-        df_pub = concat([graph_pub, rel_pub], ignore_index=True)
-        df_pub = df_pub.drop_duplicates()
-        df_pub = df_pub.dropna()
-        publisherList = [df_pub["id"][0], df_pub["name"][0]]
-        return publisherList
+
 
     # METHODS
 
     def getPublicationsPublishedInYear(self, year):
         graph_year = trp_qp.getPublicationsPublishedInYear(year)
-        rel_year = rel_qp.getPublicationsPublishedInYear(year)  
+        rel_year = rel_qp.getPublicationsPublishedInYear(year)
         df_union = concat([graph_year, rel_year], ignore_index=True)
-        df_union = df_union.drop_duplicates()
-        #df_union_sorted = df_union_no_dupl.sort_values("publication_year")
+        df_union_no_dupl = df_union.drop_duplicates()
+        df_union_sorted = df_union_no_dupl.sort_values("publication_year")
         pub_list = list()
         pub_list_object = list()
-        for row_idx, row in df_union.iterrows():
+        for row_idx, row in df_union_sorted.iterrows():
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
-            authors = GenericQueryProcessor.getAuthors(identifier)           
+            publicationVenue = row["publication_venue"]
+            authors = GenericQueryProcessor.getAuthors(identifier)
             cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list.append(pub.__str__())
             pub_list_object.append(pub)
-        return pub_list, pub_list_object
+            return pub_list, pub_list_object
 
     def getPublicationsByAuthorId(self, AuthorID):
         graph_df = trp_qp.getPublicationsByAuthorId(AuthorID)
-        rel_df = rel_qp.getPublicationsByAuthorId(AuthorID)  
+        rel_df = rel_qp.getPublicationsByAuthorId(AuthorID)
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
-        pub_list = list()  
+        pub_list = list()
         pub_list_object = list()
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
-            authors = GenericQueryProcessor.getAuthors(identifier)           
+            publicationVenue = row["publication_venue"]
+            authors = GenericQueryProcessor.getAuthors(identifier)
             cites_list = GenericQueryProcessor.getCitation(identifier)
-            pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)  
+            pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list.append(pub.__str__())
             pub_list_object.append(pub)
-        return pub_list, pub_list_object
+            return pub_list, pub_list_object
 
     def getMostCitedPublication(self):
         graph_df = trp_qp.getMostCitedPublication()
-        rel_df = rel_qp.getMostCitedPublication()  
+        rel_df = rel_qp.getMostCitedPublication()
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         pub = None
@@ -130,28 +121,28 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
-            authors = GenericQueryProcessor.getAuthors(identifier)           
+            publicationVenue = row["publication_venue"]
+            authors = GenericQueryProcessor.getAuthors(identifier)
             cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
         return pub.__str__(), pub
 
     def getMostCitedVenue(self):
         graph_df = trp_qp.getMostCitedVenue()
-        rel_df = rel_qp.getMostCitedVenue() 
+        rel_df = rel_qp.getMostCitedVenue()
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         venue = None
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["venue_id"]
             title = row["title"]
-            publisher = GenericQueryProcessor.getInfoPublisher(row["publisher"])
-            venue = Venue(identifier, title, publisher)
+            publishers = generic.getPublishers(publisher)
+            venue = Venue(identifier, title, publishers)
         return venue.__str__(), venue
 
     def getVenuesByPublisherId(self, publisherID):
         graph_df = trp_qp.getVenuesByPublisherId(publisherID)
-        rel_df = rel_qp.getVenuesByPublisherId(publisherID) 
+        rel_df = rel_qp.getVenuesByPublisherId(publisherID)
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         venues_list = list()
@@ -159,15 +150,15 @@ class GenericQueryProcessor:
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["venue_id"]
             title = row["title"]
-            publisherOfVen = GenericQueryProcessor.getInfoPublisher(publisherID)
-            venue = Venue(identifier, title, publisherOfVen)
+            publishers = generic.getPublishers(publisherID)
+            venue = Venue(identifier, title, publishers)
             venues_list.append(venue.__str__())
             venue_list_object.append(venue)
-        return venues_list, venue_list_object
+            return venues_list, venue_list_object
 
     def getPublicationInVenue(self, venueID):
         graph_df = trp_qp.getPublicationInVenue(venueID)
-        rel_df = rel_qp.getPublicationInVenue(venueID)  
+        rel_df = rel_qp.getPublicationInVenue(venueID)
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         pub_list = list()
@@ -176,13 +167,13 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
-            authors = GenericQueryProcessor.getAuthors(identifier)           
+            publicationVenue = row["publication_venue"]
+            authors = GenericQueryProcessor.getAuthors(identifier)
             cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list.append(pub.__str__())
             pub_list_object.append(pub)
-        return pub_list, pub_list_object
+            return pub_list, pub_list_object
 
 
     def getJournalArticlesInIssue(self, issue, volume, journalID):
@@ -198,8 +189,8 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
-            authors = GenericQueryProcessor.getAuthors(identifier)           
+            publicationVenue = row["publication_venue"]
+            authors = GenericQueryProcessor.getAuthors(identifier)
             cites_list = GenericQueryProcessor.getCitation(identifier)
             journalArticle = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
             journal_list.append(journalArticle.__str__())
@@ -218,9 +209,9 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
+            publicationVenue = row["publication_venue"]
             issue = row["issue"]
-            authors = GenericQueryProcessor.getAuthors(identifier)           
+            authors = GenericQueryProcessor.getAuthors(identifier)
             cites_list = GenericQueryProcessor.getCitation(identifier)
             journalArticle = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
             journal_list.append(journalArticle.__str__())
@@ -238,10 +229,10 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
+            publicationVenue = row["publication_venue"]
             issue = row["issue"]
             volume = row["volume"]
-            authors = GenericQueryProcessor.getAuthors(identifier)           
+            authors = GenericQueryProcessor.getAuthors(identifier)
             cites_list = GenericQueryProcessor.getCitation(identifier)
             journalArticle = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
             journal_list.append(journalArticle.__str__())
@@ -258,7 +249,7 @@ class GenericQueryProcessor:
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["venue_id"]
             title = row["publication_venue"]
-            publisher = GenericQueryProcessor.getInfoPublisher(row["publisher"])
+            publisher = row["publisher"]
             event = eventPartialName
             proceeding = Proceedings(identifier, title, publisher, event)
             proceedings_list.append(proceeding.__str__())
@@ -267,7 +258,7 @@ class GenericQueryProcessor:
 
     def getPublicationAuthors(self, publicationID):
         graph_df = trp_qp.getPublicationAuthors(publicationID)
-        rel_df = rel_qp.getPublicationAuthors(publicationID)  
+        rel_df = rel_qp.getPublicationAuthors(publicationID)
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         df_union_sorted = df_union_no_dupl.sort_values("family")
@@ -284,7 +275,7 @@ class GenericQueryProcessor:
 
     def getPublicationsByAuthorName(self, partialAuthorName):
         graph_df = trp_qp.getPublicationsByAuthorName(partialAuthorName)
-        rel_df = rel_qp.getPublicationsByAuthorName(partialAuthorName)  
+        rel_df = rel_qp.getPublicationsByAuthorName(partialAuthorName)
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         pub_list = list()
@@ -293,8 +284,8 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
-            authors = GenericQueryProcessor.getAuthors(identifier)           
+            publicationVenue = row["publication_venue"]
+            authors = GenericQueryProcessor.getAuthors(identifier)
             cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list.append(pub.__str__())
@@ -303,7 +294,7 @@ class GenericQueryProcessor:
 
     def getDistinctPublisherOfPublications(self, listOfPublication):
         graph_df = trp_qp.getDistinctPublisherOfPublications(listOfPublication)
-        rel_df = rel_qp.getDistinctPublisherOfPublications(listOfPublication)  
+        rel_df = rel_qp.getDistinctPublisherOfPublications(listOfPublication)
         df_union = concat([graph_df, rel_df], ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
         organizations_list = list()
@@ -316,24 +307,93 @@ class GenericQueryProcessor:
             organizations_list_object.append(organization)
         return organizations_list, organizations_list_object
 
-# ========== SET RELDb
+generic = GenericQueryProcessor([rel_qp, trp_qp])
 
-rel_path = "relationalDatabase.db"
-rel_dp = RelationalDataProcessor(rel_path)
-rel_dp.setDbPath(rel_path)
-rel_dp.uploadData("data/relational_publications.csv")
-rel_dp.uploadData("data/relationalJSON.json")
-rel_qp = RelationalQueryProcessor(rel_path)
-rel_qp.setDbPath(rel_path)
+#TESTER
 
-# ========== SET TRIDb
+#1st query
+# my_m1 = generic.getPublicationsPublishedInYear(2020)
+# print(my_m1)
+# print("-----------------------------------")
+# print(my_m1[1][0].getTitle())
+# print("-----------------------------------")
 
-graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
-graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")
-graph2.uploadData("data/graph_publications.csv")
-graph2.uploadData("data/graph_other_data.json")
-trp_qp = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph")
 
-# ========= SET GENERIC
+#2nd query
+# my_m2 = generic.getPublicationsByAuthorId("0000-0001-7553-6916")
+# print(my_m2)
+# print("-----------------------------------")
+# print(my_m2[1][0].getTitle())
+# print("-----------------------------------")
 
-generic = GenericQueryProcessor([rel_qp, trp_qp])     
+#3rd query
+# my_m3 = generic.getMostCitedPublication()
+# print(my_m3)
+# print("-----------------------------------")
+# myObj = my_m3[1]
+# print(myObj.getCitedPublications())
+# print("-----------------------------------")
+
+#4th query
+# my_m4 = generic.getMostCitedVenue()
+# print(my_m4)
+# print("-----------------------------------")
+# print(my_m4[1].getTitle())
+# print("-----------------------------------")
+
+#5th query
+# my_m5 = generic.getVenuesByPublisherId("crossref:78")
+# # print(my_m5)
+# # print("-----------------------------------")
+# myObj = my_m5[1][0]
+# print(myObj.getPublisher())
+# print("-----------------------------------")
+
+#6th query
+# my_m6 = generic.getPublicationInVenue("issn:0944-1344")
+# print(my_m6)
+# print("-----------------------------------")
+# print(my_m6[1][0].getCitedPublications())
+# print("-----------------------------------")
+
+#7th query
+# my_m7 = generic.getJournalArticlesInIssue(3, 28, "issn:1066-8888")
+# print(my_m7)
+# print("-----------------------------------")
+# print(my_m7[1][0].getIssue())
+# print("-----------------------------------")
+
+
+#8th query
+# my_m8 = generic.getJournalArticlesInVolume(28, "issn:1066-8888")
+# print(my_m8)
+# print("-----------------------------------")
+# print (my_m8[1][0].getTitle())
+# print("-----------------------------------")
+
+#9th query
+# my_m9 = generic.getProceedingsByEvent("")
+# print(my_m9)
+# print("-----------------------------------")
+# print(my_m9[1][0].getEvent())
+# print("-----------------------------------")
+
+#10th query
+# my_m10 = generic.getPublicationAuthors("doi:10.1007/s11192-019-03311-9")
+# print(my_m10)
+# print("-----------------------------------")
+# print(my_m10[1][0].getGivenName())
+# print("-----------------------------------")
+
+#11th query
+# my_m11 = generic.getPublicationsByAuthorName("Peroni")
+# print(my_m11)
+# print("-----------------------------------")
+# print(my_m11[1][0].getCitedPublications())
+# print("-----------------------------------")
+
+#12th query
+# my_m12 = generic.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ])
+# print(my_m12)
+# print("-----------------------------------")
+# print(my_m12[1][0].getName())

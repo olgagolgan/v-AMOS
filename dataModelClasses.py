@@ -40,8 +40,7 @@ class Publication(IdentifiableEntity):
         citedlist = list()
         citedlist_object = list()
         for citation in self.cited:
-            infoList = citation.split(", ")
-            citedpub = Publication(infoList[0], infoList[1], infoList[2], ["unavailable"], infoList[3], infoList[4])
+            citedpub = Publication(citation[0], citation[1], citation[2], ["unavailable"], citation[3], citation[4])
             citedlist.append(citedpub.__str__())
             citedlist_object.append(citedpub)
         return citedlist, citedlist_object

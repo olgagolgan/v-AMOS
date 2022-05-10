@@ -37,8 +37,7 @@ class GenericQueryProcessor:
             title = row["title"]
             publicationVenue = row["publication_venue"]
             authors = GenericQueryProcessor.getAuthors(identifier)  
-            references = [identifier, publicationYear, title, authors, publicationVenue]   
-            cited_pub = ", ".join(references)
+            cited_pub = [identifier, publicationYear, title, authors, publicationVenue]   
             cites_list.append(cited_pub)
         return cites_list
 
@@ -87,11 +86,11 @@ class GenericQueryProcessor:
         graph_year = trp_qp.getPublicationsPublishedInYear(year)
         rel_year = rel_qp.getPublicationsPublishedInYear(year)  
         df_union = concat([graph_year, rel_year], ignore_index=True)
-        df_union_no_dupl = df_union.drop_duplicates()
-        df_union_sorted = df_union_no_dupl.sort_values("publication_year")
+        df_union = df_union.drop_duplicates()
+        #df_union_sorted = df_union_no_dupl.sort_values("publication_year")
         pub_list = list()
         pub_list_object = list()
-        for row_idx, row in df_union_sorted.iterrows():
+        for row_idx, row in df_union.iterrows():
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
@@ -101,7 +100,7 @@ class GenericQueryProcessor:
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list.append(pub.__str__())
             pub_list_object.append(pub)
-            return pub_list, pub_list_object
+        return pub_list, pub_list_object
 
     def getPublicationsByAuthorId(self, AuthorID):
         graph_df = trp_qp.getPublicationsByAuthorId(AuthorID)
@@ -326,7 +325,7 @@ generic = GenericQueryProcessor([rel_qp, trp_qp])
 my_m1 = generic.getPublicationsPublishedInYear(2020)
 print(my_m1)
 print("-----------------------------------")
-print(my_m1[1][0].getTitle())
+print(my_m1[1][0].getCitedPublications())
 print("-----------------------------------")
 
 

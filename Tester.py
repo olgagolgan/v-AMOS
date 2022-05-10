@@ -84,10 +84,9 @@ from genericQueryProcessor import *
 # print(my_m11[1][0].getCitedPublications())
 # print("-----------------------------------")
 
-"""
-12th query
-my_m12 = generic.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ])
-print(my_m12)
-print("-----------------------------------")
-print(my_m12[1][0].getName())
-"""
+# 12th query
+# my_m12 = generic.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ])
+# print(my_m12)
+# print("-----------------------------------")
+# print(my_m12[1][0].getName())
+

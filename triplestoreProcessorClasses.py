@@ -477,7 +477,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         }
         """
         df1_sparql = get(self.endpointUri, qry, True)
-        crossref = df1_sparql["publisher"][0]
+        crossref = df1_sparql.loc[0]["publisher"]  #Probabilmente critico ******
         qry2= """PREFIX schema: <https://schema.org/>
         SELECT ?name
         WHERE{
@@ -497,14 +497,3 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
             ?x schema:identifier '"""+str(crossref)+"""'}"""
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
-
-
-#TESTER
-
-graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
-graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")
-graph2.uploadData("data/graph_publications.csv")
-graph2.uploadData("data/graph_other_data.json")
-trp_qp = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph")
-#print(graph3.getCitedOfPublication("doi:10.1162/qss_a_00023"))    
-print(trp_qp.getPublicationsPublishedInYear(2020))

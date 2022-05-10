@@ -48,7 +48,7 @@ print(rel_qp.getVenuesInfoByDoi("doi:10.1007/s11192-019-03217-6"))
 my_m1 = generic.getPublicationsPublishedInYear(2020)
 print(my_m1)
 print("-----------------------------------")
-print(my_m1[1][0].getCitedPublications())
+print(my_m1[1][0].getAuthor())
 print("-----------------------------------")
 
 

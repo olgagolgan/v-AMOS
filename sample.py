@@ -45,7 +45,7 @@ class Organization(IdentifiableEntity):
 venueSamp = ["issn:2641-3337, issn:1588-2861", "Quantitative Science Studies", ["crossref:281", "MIT Press - Journals"]]
 
 def printInfo(venue):
-    my_venue = Venue(venueSamp[0],venueSamp[1],venueSamp[2])
+    my_venue = Venue(venue[0],venue[1],venue[2])
     my_id = my_venue.getIds()
     my_name = my_venue.getTitle()
     my_pub = my_venue.getPublisher()

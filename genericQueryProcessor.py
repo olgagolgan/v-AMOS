@@ -46,13 +46,13 @@ class GenericQueryProcessor:
         rel_au = rel_qp.getPublicationAuthors(identifier) 
         df_au = concat([graph_au, rel_au], ignore_index=True)
         df_au_no_dupl = df_au.drop_duplicates()
-        authors = set()
+        authors = list()
         for row_idx, row in df_au_no_dupl.iterrows():
             orcid = row["orcid"]
             givenName = row["given"]
             familyName = row["family"]
             author = str(orcid) + ", " + str(givenName) + ", " + str(familyName)
-            authors.add(author)
+            authors.append(author)
         return authors
     
     def getInfoVenuePub(identifier):

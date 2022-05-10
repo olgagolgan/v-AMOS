@@ -55,8 +55,9 @@ class GenericQueryProcessor:
             authors.append(author)
         return authors
     
-    def getInfoVenuePub(identifier):
+    def getInfoVenuePub(self, identifier):
         graph_venpub = trp_qp.getVenuesInfoByDoi(identifier)
+        graph_venpub.columns = ['venue_id', 'publication_venue', 'id', 'name']
         rel_venpub = rel_qp.getVenuesInfoByDoi(identifier)
         df_venpub = concat([graph_venpub, rel_venpub], ignore_index=True)
         df_venpub = df_venpub.drop_duplicates()
@@ -84,7 +85,7 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
             authors = GenericQueryProcessor.getAuthors(identifier)           
             cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
@@ -103,7 +104,7 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
             authors = GenericQueryProcessor.getAuthors(identifier)           
             cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)  
@@ -121,7 +122,7 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
             authors = GenericQueryProcessor.getAuthors(identifier)           
             cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
@@ -166,7 +167,7 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
             authors = GenericQueryProcessor.getAuthors(identifier)           
             cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
@@ -188,7 +189,7 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
             authors = GenericQueryProcessor.getAuthors(identifier)           
             cites_list = GenericQueryProcessor.getCitation(identifier)
             journalArticle = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
@@ -208,7 +209,7 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
             issue = row["issue"]
             authors = GenericQueryProcessor.getAuthors(identifier)           
             cites_list = GenericQueryProcessor.getCitation(identifier)
@@ -228,7 +229,7 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
             issue = row["issue"]
             volume = row["volume"]
             authors = GenericQueryProcessor.getAuthors(identifier)           
@@ -283,7 +284,7 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            publicationVenue = GenericQueryProcessor.getInfoVenuePub(identifier)
             authors = GenericQueryProcessor.getAuthors(identifier)           
             cites_list = GenericQueryProcessor.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
@@ -396,3 +397,5 @@ print(my_m12)
 print("-----------------------------------")
 print(my_m12[1][0].getName())
 """
+
+print(generic.getInfoVenuePub("doi:10.1007/s10115-017-1100-y"))

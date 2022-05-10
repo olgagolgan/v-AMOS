@@ -37,7 +37,14 @@ class Publication(IdentifiableEntity):
         return self.title
 
     def getCitedPublications(self):
-        return self.cited 
+        citedlist = list()
+        citedlist_object = list()
+        for citation in self.cited:
+            infoList = citation.split(", ")
+            citedpub = Publication(infoList[0], infoList[1], infoList[2], ["unavailable"], infoList[3], infoList[4])
+            citedlist.append(citedpub.__str__())
+            citedlist_object.append(citedpub)
+        return citedlist, citedlist_object
 
     def getPublicationVenue(self):
         venueOfPub = Venue(self.publicationVenue[0],self.publicationVenue[1],self.publicationVenue[2])

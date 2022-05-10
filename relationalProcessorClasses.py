@@ -1,4 +1,5 @@
 from sqlite3 import connect
+from black import out
 from pandas import read_csv, read_sql, DataFrame
 from json import load
 import pandas as pd
@@ -364,6 +365,17 @@ class RelationalQueryProcessor(RelationalProcessor):
                     df_sql = read_sql(query, con)
                     output = pd.concat([output, df_sql])
             return output
+    
+    def getVenuesInfoByDoi(self, doi):
+        with connect(self.dbPath) as con: 
+            query = """ SELECT  Venues_doi.venue_id, Publication.publication_venue,  publisher.id, publisher.name
+            FROM Venues_doi
+            LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Venues_doi.doi
+            LEFT JOIN Publisher ON namedVenues_Publisher."publisher" == publisher.id
+            LEFT JOIN Publication ON Publication.doi == Venues_doi.doi
+            WHERE Venues_doi.doi = "{0}";""".format(doi)
+            df = read_sql(query, con)
+            return df
 
 #rel_p = RelationalProcessor("sonno.db")
 rel_path = "relationalDatabase.db"
@@ -401,4 +413,45 @@ print("-----------------")
 print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
 print("-----------------")
 print(rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))
+print("-----------------")
+print(rel_qp.getVenuesInfoByDoi("doi:10.1007/s11192-019-03217-6"))
 """
+"""
+SE VA IN GENERIC DA CAMBIARE
+my_query = rel_qp.getVenuesInfoByDoi("doi:10.1007/s11192-019-03217-6")
+
+def getInfoVenuePub(df):
+    venuesIdList = []
+    for el in df["venue_id"]:
+        venuesIdList.append(el)
+    venuesId = ", ".join(venuesIdList)
+    venueName = my_query["publication_venue"][0]
+    pubId = my_query["id"][0]
+    pubName = my_query["name"][0]
+    listInfoVen = [venuesId, venueName, [pubId, pubName]]
+    return listInfoVen
+
+print(getInfoVenuePub(my_query))
+"""
+
+
+
+
+
+
+"""
+# ==== VENUE ID ====
+my_ids = my_query["venue_id"]
+print(type(my_ids))
+my_info = (my_ids[0], my_ids[1])
+output = ", ".join(my_info)
+print(output)
+# === PUBVENUE
+venueName = my_query["publication_venue"][0]
+# === PUBLISH ID
+pubId = my_query["id"][0]
+# === PUBLISH NAME
+pubName = my_query["name"][0]
+listone = [output, venueName, [pubId, pubName]]
+print(listone)
+    """

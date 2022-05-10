@@ -376,6 +376,15 @@ class RelationalQueryProcessor(RelationalProcessor):
             WHERE Venues_doi.doi = "{0}";""".format(doi)
             df = read_sql(query, con)
             return df
+    
+    def getPubNameById(self, crossref):
+        with connect(self.dbPath) as con: 
+            query = "SELECT  id, name FROM publisher WHERE id = '{0}'".format(crossref)
+            df = read_sql(query, con)
+            return df
+
+
+
 
 #rel_p = RelationalProcessor("sonno.db")
 rel_path = "relationalDatabase.db"
@@ -437,21 +446,3 @@ print(getInfoVenuePub(my_query))
 
 
 
-
-
-"""
-# ==== VENUE ID ====
-my_ids = my_query["venue_id"]
-print(type(my_ids))
-my_info = (my_ids[0], my_ids[1])
-output = ", ".join(my_info)
-print(output)
-# === PUBVENUE
-venueName = my_query["publication_venue"][0]
-# === PUBLISH ID
-pubId = my_query["id"][0]
-# === PUBLISH NAME
-pubName = my_query["name"][0]
-listone = [output, venueName, [pubId, pubName]]
-print(listone)
-    """

@@ -36,8 +36,9 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             publicationVenue = row["publication_venue"]
-            authors = GenericQueryProcessor.getAuthors(identifier)           
-            cited_pub = str(identifier) + '; publication year: ' + str(publicationYear) + '; title: ' + str(title) + '; authors: ' + str(authors) + '; publication venue: ' + str(publicationVenue) + '.'
+            authors = GenericQueryProcessor.getAuthors(identifier)  
+            references = [identifier, publicationYear, title, authors, publicationVenue]   
+            cited_pub = ", ".join(references)
             cites_list.append(cited_pub)
         return cites_list
 
@@ -55,7 +56,7 @@ class GenericQueryProcessor:
             authors.append(author)
         return authors
     
-    def getInfoVenuePub(self, identifier):
+    def getInfoVenuePub(identifier):
         graph_venpub = trp_qp.getVenuesInfoByDoi(identifier)
         graph_venpub.columns = ['venue_id', 'publication_venue', 'id', 'name']
         rel_venpub = rel_qp.getVenuesInfoByDoi(identifier)
@@ -70,6 +71,15 @@ class GenericQueryProcessor:
         pubName = df_venpub["name"][0]
         listInfoVen = [venuesId, venueName, [pubId, pubName]]
         return listInfoVen
+
+    def getInfoPublisher(identifier):
+        graph_pub = trp_qp.getPubNameById(identifier)
+        rel_pub = rel_qp.getPubNameById(identifier)
+        df_pub = concat([graph_pub, rel_pub], ignore_index=True)
+        df_pub = df_pub.drop_duplicates()
+        df_pub = df_pub.dropna()
+        publisherList = [df_pub["id"][0], df_pub["name"][0]]
+        return publisherList
 
     # METHODS
 
@@ -137,7 +147,7 @@ class GenericQueryProcessor:
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["venue_id"]
             title = row["title"]
-            publisher = row["publisher"]
+            publisher = GenericQueryProcessor.getInfoPublisher(row["publisher"])
             venue = Venue(identifier, title, publisher)
         return venue.__str__(), venue
 
@@ -151,7 +161,8 @@ class GenericQueryProcessor:
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["venue_id"]
             title = row["title"]
-            venue = Venue(identifier, title, publisherID)
+            publisherOfVen = GenericQueryProcessor.getInfoPublisher(publisherID)
+            venue = Venue(identifier, title, publisherOfVen)
             venues_list.append(venue.__str__())
             venue_list_object.append(venue)
             return venues_list, venue_list_object
@@ -249,7 +260,7 @@ class GenericQueryProcessor:
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["venue_id"]
             title = row["publication_venue"]
-            publisher = row["publisher"]
+            publisher = GenericQueryProcessor.getInfoPublisher(row["publisher"])
             event = eventPartialName
             proceeding = Proceedings(identifier, title, publisher, event)
             proceedings_list.append(proceeding.__str__())
@@ -312,11 +323,11 @@ generic = GenericQueryProcessor([rel_qp, trp_qp])
 #TESTER
 
 #1st query
-# my_m1 = generic.getPublicationsPublishedInYear(2020)
-# print(my_m1)
-# print("-----------------------------------")
-# print(my_m1[1][0].getTitle())
-# print("-----------------------------------")
+my_m1 = generic.getPublicationsPublishedInYear(2020)
+print(my_m1)
+print("-----------------------------------")
+print(my_m1[1][0].getTitle())
+print("-----------------------------------")
 
 
 #2nd query
@@ -344,7 +355,7 @@ generic = GenericQueryProcessor([rel_qp, trp_qp])
 # my_m5 = generic.getVenuesByPublisherId("crossref:78")
 # print(my_m5)
 # print("-----------------------------------")
-# print(my_m5[1][0].getTitle)
+# print(my_m5[1][0].getPublisher())
 # print("-----------------------------------")
 
 #6th query 
@@ -397,5 +408,3 @@ print(my_m12)
 print("-----------------------------------")
 print(my_m12[1][0].getName())
 """
-
-print(generic.getInfoVenuePub("doi:10.1007/s10115-017-1100-y"))

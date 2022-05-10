@@ -487,6 +487,17 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         df2_sparql = get(self.endpointUri, qry2, True)
         df_sparql = df1_sparql.join(df2_sparql)
         return df_sparql
+    
+    def getPubNameById(self, crossref):
+        qry = """PREFIX schema: <https://schema.org/>
+            SELECT ?id ?name
+            WHERE{
+            ?x schema:name ?name.
+            ?x schema:identifier ?id.
+            ?x schema:identifier '"""+str(crossref)+"""'}"""
+        df_sparql = get(self.endpointUri, qry, True)
+        return df_sparql
+
 
 #TESTER
 

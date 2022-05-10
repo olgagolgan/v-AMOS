@@ -456,6 +456,38 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         df_sparql = get(self.endpointUri, qry, True)
         return df_sparql
 
+    def getVenuesInfoByDoi(self, doi):
+        qry = """
+                PREFIX schema: <https://schema.org/>
+        SELECT DISTINCT ?venue_id ?publication_venue ?publisher
+        WHERE
+        {
+        {SELECT ?publication_venue
+        WHERE
+        {
+        ?s schema:isPartOf ?publication_venue.
+        ?s schema:publishedBy ?publisher.
+        ?s schema:productID ?doi.
+        ?s schema:productID '""" + str(doi) + """'
+        }
+        }
+        ?s schema:isPartOf ?publication_venue.
+        ?s schema:VirtualLocation ?venue_id.
+        ?s schema:publishedBy ?publisher
+        }
+        """
+        df1_sparql = get(self.endpointUri, qry, True)
+        crossref = df1_sparql["publisher"][0]
+        qry2= """PREFIX schema: <https://schema.org/>
+        SELECT ?name
+        WHERE{
+        ?x schema:name ?name.
+        ?x schema:identifier ?id.
+        ?x schema:identifier '""" + str(crossref) + """'}"""
+        df2_sparql = get(self.endpointUri, qry2, True)
+        df_sparql = df1_sparql.join(df2_sparql)
+        return df_sparql
+
 #TESTER
 
 graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
@@ -463,4 +495,5 @@ graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")
 graph2.uploadData("data/graph_publications.csv")
 graph2.uploadData("data/graph_other_data.json")
 trp_qp = TriplestoreQueryProcessor("http://127.0.0.1:9999/blazegraph")
-# print(graph3.getCitedOfPublication("doi:10.1162/qss_a_00023"))    
+#print(graph3.getCitedOfPublication("doi:10.1162/qss_a_00023"))    
+print(trp_qp.getCitedOfPublication("doi:10.1007/s10115-017-1100-y"))

@@ -364,6 +364,7 @@ class RelationalQueryProcessor(RelationalProcessor):
                     output = pd.concat([output, df_sql])
             return output
 
+# setting the environment for testing based on our dataset
 
 # rel_path = "relationalDatabase.db"
 # rel_dp = RelationalDataProcessor(rel_path)

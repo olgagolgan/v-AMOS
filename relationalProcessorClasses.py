@@ -155,7 +155,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             WHERE Publication.publication_year = '{0}';""".format(year)
             df_sql = read_sql(query, con)
-            return df_sql
+        return df_sql
 
     # getPublicationsPublishedInYear: It returns a data frame with all the publications (i.e. the rows) that have
     # been published in the input year (e.g. 2020).
@@ -169,7 +169,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             WHERE Author.orcid = '{0}'""".format(id)
             df_sql = read_sql(query, con)
-            return df_sql
+        return df_sql
 
     # getPublicationsByAuthorId: It returns a data frame with all the publications (i.e. the rows) that have been
     # authored by the person having the identifier specified as input (e.g. "0000-0001-9857-1511").
@@ -206,7 +206,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             LEFT JOIN Venues_doi ON "doi_mention" == Venues_doi.doi
             LEFT JOIN Publication ON "doi_mention" == Publication.doi"""
             df_sql = read_sql(query, con)
-            return df_sql
+        return df_sql
 
     # getMostCitedVenue: It returns a data frame with all the venues (i.e. the rows) containing the publications
     # that, overall, have received the most number of citations by other publications.
@@ -266,7 +266,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             LEFT JOIN JournalArticles ON JournalArticles.doi == Publication.doi
             WHERE JournalArticles.volume = '{0}' AND Venues_doi.venue_id = '{1}';""".format(volume, journalId)
             df_sql = read_sql(query, con)
-            return df_sql
+        return df_sql
 
     # getJournalArticlesInVolume: It returns a data frame with all the journal articles (i.e. the rows) that have
     # been included, independently from the issue, in input volume (e.g. "17") of the journal having the identifier
@@ -296,7 +296,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             LEFT JOIN Venues_doi ON Venues_doi.doi == Proceedings.doi
             WHERE Proceedings.event COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%' """.format(eventPartialName)
             df_sql = read_sql(query, con)
-            return df_sql
+        return df_sql
 
     # getProceedingsByEvent: It returns a data frame with all the proceedings (i.e. the rows) that refer to the
     # events that match (in lowercase), even partially, with the name specified as input (e.g. "web").
@@ -308,7 +308,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             FROM Author
             WHERE doi = '{0}';""".format(publicationId)
             coauthors = read_sql(query, con)
-            return coauthors
+        return coauthors
 
     # getPublicationAuthors: It returns a data frame with all the authors (i.e. the rows) of the publication with the
     # identifier specified as input (e.g. "doi:10.1080/21645515.2021.1910000").
@@ -324,7 +324,7 @@ class RelationalQueryProcessor(RelationalProcessor):
             WHERE family COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%' OR given COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%';""".format(
                 authorPartialName)
             authorId = read_sql(query, con)
-            return authorId
+        return authorId
 
     # getPublicationsByAuthorName: It returns a data frame with all the publications (i.e. the rows) that have been
     # authored by the people having their name matching (in lowercase), even partially, with the name specified as
@@ -340,7 +340,7 @@ class RelationalQueryProcessor(RelationalProcessor):
                 WHERE namedVenues_Publisher.doi = '{0}';""".format(el)
                 df_sql = read_sql(query, con)  # doi:10.1080/21645515.2021.1910000
                 publisherId = pd.concat([publisherId, df_sql])
-            return publisherId
+        return publisherId
 
     # getDistinctPublisherOfPublications: It returns a data frame with all the distinct publishers (i.e. the rows) that
     # have published the venues of the publications with identifiers those specified as input (e.g. [
@@ -362,9 +362,9 @@ class RelationalQueryProcessor(RelationalProcessor):
                     WHERE Publication.doi = '{0}';""".format(doiCited)
                     df_sql = read_sql(query, con)
                     output = pd.concat([output, df_sql])
-            return output
+        return output
 
-# setting the environment for testing based on our dataset
+# Setting the environment for testing based on our dataset
 
 # rel_path = "relationalDatabase.db"
 # rel_dp = RelationalDataProcessor(rel_path)
@@ -373,6 +373,8 @@ class RelationalQueryProcessor(RelationalProcessor):
 # rel_dp.uploadData("data/relationalJSON.json")
 # rel_qp = RelationalQueryProcessor(rel_path)
 # rel_qp.setDbPath(rel_path)
+
+# Test sample queries
 
 # print("1) getPublicationsPublishedInYear:\n",rel_qp.getPublicationsPublishedInYear(2020))
 # print("-----------------")
@@ -400,4 +402,4 @@ class RelationalQueryProcessor(RelationalProcessor):
 # print("-----------------")
 # print("13) getDistinctPublisherOfPublications:\n", rel_qp.getDistinctPublisherOfPublications([ "doi:10.1080/21645515.2021.1910000", "doi:10.3390/ijfs9030035" ]))
 # print("-----------------")
-# print(rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))
+# print("14) rel_qp.getCitedOfPublication:\n",rel_qp.getCitedOfPublication("doi:10.1162/qss_a_00023"))

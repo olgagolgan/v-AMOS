@@ -26,7 +26,7 @@ def getPublicationsStatInYear(year):
 
         pub_number = df_union_no_dupl["title"].value_counts()
 
-        return "Title of publications and number of times they appear in data related to the year " + str(year), pub_number
+        return pub_number
 
 def getBestVenuesInYear(year):
         graph_year = trp_qp.getPublicationsPublishedInYear(year)
@@ -35,7 +35,7 @@ def getBestVenuesInYear(year):
         df_union_no_dupl = df_union.drop_duplicates()
         final_df = df_union_no_dupl["publication_venue"].value_counts()[:3]
 
-        return "Top three venues with related number of publications in year " + str(year), final_df
+        return "Top three venues with related number of publications in year " + str(year) + ":", final_df
 
 
 def getBestAuthorsInYear(year):
@@ -45,7 +45,7 @@ def getBestAuthorsInYear(year):
         df_union_no_dupl = df_union.drop_duplicates()
         final_df = df_union_no_dupl["family"].value_counts()[:3]
 
-        return "Top three authors (surname) with related number of publications in year " + str(year), final_df
+        return "Top three authors (surname) with related number of publications in year " + str(year) + ":", final_df
 
 
 ## STATISTICS ##
@@ -58,11 +58,11 @@ def getBestAuthorsInYear(year):
 # print(my_m13)
 # print("-------")
 
-# my_m14 = getBestAuthorsInYear(2020)
-# print("The output of the method getBestAuthorsInYear with 2020 as input will be:")
-# print(my_m14)
-# print("-------")
-
-# my_m15 = getBestVenuesInYear(2020)
+# my_m14 = getBestVenuesInYear(2020)
 # print("The output of the method getBestVenuesInYear with 2020 as input will be:")
+# print(my_m14)
+
+# my_m15 = getBestAuthorsInYear(2020)
+# print("The output of the method getBestAuthorsInYear with 2020 as input will be:")
 # print(my_m15)
+# print("-------")

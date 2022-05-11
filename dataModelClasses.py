@@ -43,11 +43,14 @@ class Publication(IdentifiableEntity):
 
     def getAuthors(self):
         setAuthors = set()
+        setAuthorsInfo = set()
         for person in self.authors:
             infoList = person.split(", ")
             author = Person(infoList[0], infoList[1], infoList[2])
+            authorinfo = (infoList[0], infoList[1], infoList[2])
+            setAuthorsInfo.add(authorinfo)
             setAuthors.add(author)
-        return setAuthors
+        return setAuthorsInfo, setAuthors
 
 
 class JournalArticle(Publication):

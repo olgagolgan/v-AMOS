@@ -324,7 +324,7 @@ class GenericQueryProcessor:
 # rel_qp = RelationalQueryProcessor(rel_path)
 
 #
-generic = GenericQueryProcessor([trp_qp, rel_qp])
+# generic = GenericQueryProcessor([trp_qp, rel_qp])
 
 #TESTER
 

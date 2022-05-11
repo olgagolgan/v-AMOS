@@ -24,7 +24,7 @@ class GenericQueryProcessor:
 
     # ADDITIONAL METHODS FOR A BETTER CODE
 
-    def getCitation(identifier):
+    def getCitation(identifier): 
         graph_cite = trp_qp.getCitedOfPublication(identifier)
         rel_cite = rel_qp.getCitedOfPublication(identifier)
         df_cite = concat([graph_cite, rel_cite], ignore_index=True)

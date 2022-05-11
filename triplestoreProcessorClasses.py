@@ -455,7 +455,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         return df_sparql
 
 
-# TESTER
+# setting the environment for testing based on our dataset
 
 # graph1 = TriplestoreProcessor("http://127.0.0.1:9999/blazegraph")
 # graph2 = TriplestoreDataProcessor("http://127.0.0.1:9999/blazegraph")

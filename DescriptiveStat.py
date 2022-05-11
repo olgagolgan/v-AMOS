@@ -26,7 +26,7 @@ def getPublicationsStatInYear(year):
 
         pub_number = df_union_no_dupl["title"].value_counts()
 
-        return pub_number
+        return "Title of publications and number of times they appear in data related to the year " + str(year), pub_number
 
 def getBestVenuesInYear(year):
         graph_year = trp_qp.getPublicationsPublishedInYear(year)

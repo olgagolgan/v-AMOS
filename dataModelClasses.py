@@ -41,26 +41,13 @@ class Publication(IdentifiableEntity):
     def getPublicationVenue(self):
         return self.publicationVenue
 
-    def getAuthor(self):
-        listAuthors = []
+    def getAuthors(self):
+        setAuthors = set()
         for person in self.authors:
             infoList = person.split(", ")
             author = Person(infoList[0], infoList[1], infoList[2])
-            listAuthors.append(author)
-        return listAuthors
-
-    def getAuthors(self):
-        return self.authors
-
-
-    # def getAuthor(self.authors):
-    # listAuthors = []
-    # for person in self.authors:
-    #     infoList = person.split(", ")
-    #     author = Person(infoList[0], infoList[1], infoList[2])
-    #     listAuthors.append(author)
-    # return listAuthors
-    
+            setAuthors.add(author)
+        return setAuthors
 
 
 class JournalArticle(Publication):

@@ -90,7 +90,7 @@ class GenericQueryProcessor:
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list.append(pub.__str__())
             pub_list_object.append(pub)
-            return pub_list, pub_list_object
+        return pub_list, pub_list_object
 
     def getPublicationsByAuthorId(self, AuthorID):
         graph_df = trp_qp.getPublicationsByAuthorId(AuthorID)
@@ -109,7 +109,7 @@ class GenericQueryProcessor:
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list.append(pub.__str__())
             pub_list_object.append(pub)
-            return pub_list, pub_list_object
+        return pub_list, pub_list_object
 
     def getMostCitedPublication(self):
         graph_df = trp_qp.getMostCitedPublication()
@@ -154,7 +154,7 @@ class GenericQueryProcessor:
             venue = Venue(identifier, title, publishers)
             venues_list.append(venue.__str__())
             venue_list_object.append(venue)
-            return venues_list, venue_list_object
+        return venues_list, venue_list_object
 
     def getPublicationInVenue(self, venueID):
         graph_df = trp_qp.getPublicationInVenue(venueID)
@@ -173,7 +173,7 @@ class GenericQueryProcessor:
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list.append(pub.__str__())
             pub_list_object.append(pub)
-            return pub_list, pub_list_object
+        return pub_list, pub_list_object
 
 
     def getJournalArticlesInIssue(self, issue, volume, journalID):

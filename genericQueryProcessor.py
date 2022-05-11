@@ -307,7 +307,13 @@ class GenericQueryProcessor:
             organizations_list_object.append(organization)
         return organizations_list, organizations_list_object
 
-generic = GenericQueryProcessor([rel_qp, trp_qp])
+trp = TriplestoreProcessor.getEndPoint()
+trp_qp = TriplestoreQueryProcessor(trp)
+
+rel = RelationalProcessor.getDbPath()
+rel_qp = RelationalQueryProcessor(rel)
+
+generic = GenericQueryProcessor([trp_qp, rel_qp])
 
 #TESTER
 

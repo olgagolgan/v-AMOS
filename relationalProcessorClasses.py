@@ -365,13 +365,13 @@ class RelationalQueryProcessor(RelationalProcessor):
             return output
 
 
-rel_path = "relationalDatabase.db"
-rel_dp = RelationalDataProcessor(rel_path)
-rel_dp.setDbPath(rel_path)
-rel_dp.uploadData("data/relational_publications.csv")
-rel_dp.uploadData("data/relationalJSON.json")
-rel_qp = RelationalQueryProcessor(rel_path)
-rel_qp.setDbPath(rel_path)
+# rel_path = "relationalDatabase.db"
+# rel_dp = RelationalDataProcessor(rel_path)
+# rel_dp.setDbPath(rel_path)
+# rel_dp.uploadData("data/relational_publications.csv")
+# rel_dp.uploadData("data/relationalJSON.json")
+# rel_qp = RelationalQueryProcessor(rel_path)
+# rel_qp.setDbPath(rel_path)
 
 # print("1) getPublicationsPublishedInYear:\n",rel_qp.getPublicationsPublishedInYear(2020))
 # print("-----------------")

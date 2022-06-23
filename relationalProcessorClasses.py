@@ -41,7 +41,7 @@ class RelationalDataProcessor(RelationalProcessor):
                             row = [doi, id + 1]
                             rows_first.append(row)
                     df1 = pd.DataFrame(rows_author)
-                    df2 = pd.DataFrame(rows_first);
+                    df2 = pd.DataFrame(rows_first)
                     df2.columns = ["doi", "coauthor_no."]
                     authorDf = df2.join(df1)
 

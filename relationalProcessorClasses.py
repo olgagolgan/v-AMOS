@@ -117,9 +117,10 @@ class RelationalDataProcessor(RelationalProcessor):
                 proceedings_paper.rename(columns={'id': 'doi'}, inplace=True)
 
                 # ========= VENUE NAME  ==============
-                venueNamesPubRaw = csvData[["id", "title", "publication_year", "publisher"]]
+                venueNamesPubRaw = csvData[["id", "publication_venue", "publication_year", "publisher"]]
                 venueNamesPub = venueNamesPubRaw.copy()
                 venueNamesPub.rename(columns={'id': 'doi'}, inplace=True)
+                venueNamesPub.rename(columns={'publication_venue': 'title'}, inplace=True)
 
                 # ========= PROCEEDINGS ==============
                 proceedingsRaw = csvData.query("venue_type == 'proceeding'")
@@ -363,6 +364,18 @@ class RelationalQueryProcessor(RelationalProcessor):
                     df_sql = read_sql(query, con)
                     output = pd.concat([output, df_sql])
             return output
+
+    def getVenueByPublicationId (self, doi):
+        with connect(self.dbPath) as con:
+            query = """
+            SELECT venue_id, title, id, name
+            FROM Venues_doi
+            LEFT JOIN namedVenues_Publisher ON Venues_doi.doi = namedVenues_Publisher.doi
+            LEFT JOIN Publisher ON publisher.id = namedVenues_Publisher.publisher
+            WHERE Venues_doi.doi = '{0}';""".format(doi)
+            authorId = read_sql(query, con)
+            return authorId
+
 
 # setting the environment for testing based on our dataset
 

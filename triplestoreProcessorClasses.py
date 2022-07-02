@@ -454,6 +454,31 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         df_sparql = get(self.endpointUrl, qry, True)
         return df_sparql
 
+    def getVenueByPublicationId(self, doi):
+        qry = """
+            PREFIX schema: <https://schema.org/>
+            SELECT DISTINCT ?venue_id ?title ?id ?name 
+            WHERE{
+                ?s schema:name ?name.
+                ?s schema:identifier ?id      
+                {SELECT  ?title ?id ?venue_id ?doi
+                WHERE{ 
+                {SELECT ?doi ?title ?id
+                    WHERE{
+                    ?y schema:publishedBy ?id.
+                    ?y schema:isPartOf ?title.
+                    ?y schema:productID ?doi.
+                    ?y schema:productID '""" + str(doi) + """'
+                    }
+                }
+                ?x schema:isPartOf ?title.
+                ?x schema:VirtualLocation ?venue_id.
+                ?x schema:publishedBy ?id.
+            }}}
+        """
+        df_sparql = get(self.endpointUrl, qry, True)
+        return df_sparql
+
 
 # setting the environment for testing based on our dataset
 

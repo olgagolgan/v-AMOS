@@ -101,6 +101,8 @@ class RelationalDataProcessor(RelationalProcessor):
                 # ========= JOURNAL ARTICLE ==============
                 journal_articlesRaw = csvData.query("type == 'journal-article'")
                 journal_articlesRaw = journal_articlesRaw[["id", "issue", "volume"]]
+                journal_articlesRaw["issue"] = journal_articlesRaw["issue"].astype(str)
+                journal_articlesRaw["volume"] = journal_articlesRaw["volume"].astype(str)
                 journal_articles = journal_articlesRaw.copy()
                 journal_articles.rename(columns={'id': 'doi'}, inplace=True)
 
@@ -399,9 +401,9 @@ class RelationalQueryProcessor(RelationalProcessor):
 # print("-----------------")
 # print("6) getPublicationInVenue:\n", rel_qp.getPublicationInVenue("issn:0944-1344"))
 # print("-----------------")
-# print("7) getJournalArticlesInIssue:\n", rel_qp.getJournalArticlesInIssue(9, 17, "issn:2164-5515"))
+# print("7) getJournalArticlesInIssue:\n", rel_qp.getJournalArticlesInIssue("9", "17", "issn:2164-5515"))
 # print("-----------------")
-# print("8) getJournalArticlesInVolume:\n", rel_qp.getJournalArticlesInVolume(17, "issn:2164-5515"))
+# print("8) getJournalArticlesInVolume:\n", rel_qp.getJournalArticlesInVolume("17", "issn:2164-5515"))
 # print("-----------------")
 # print("9) getJournalArticlesInJournal:\n", rel_qp.getJournalArticlesInJournal("issn:2164-5515"))
 # print("-----------------")

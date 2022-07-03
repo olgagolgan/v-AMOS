@@ -152,9 +152,11 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getPublicationsPublishedInYear(self, year):
         with connect(self.dbPath) as con:
             query = """ 
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, Publication.type
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
+            LEFT JOIN JournalArticles ON Publication.doi == JournalArticles.doi
+            LEFT JOIN BookChapter ON Publication.doi == BookChapter.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             WHERE Publication.publication_year = '{0}';""".format(year)
             df_sql = read_sql(query, con)
@@ -166,9 +168,11 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getPublicationsByAuthorId(self, id):
         with connect(self.dbPath) as con:
             query = """
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, Publication.type
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
+            LEFT JOIN JournalArticles ON Publication.doi == JournalArticles.doi
+            LEFT JOIN BookChapter ON Publication.doi == BookChapter.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             WHERE Author.orcid = '{0}'""".format(id)
             df_sql = read_sql(query, con)
@@ -180,13 +184,15 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getMostCitedPublication(self):
         with connect(self.dbPath) as con:
             query = """
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, MostCited, Publication.type
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, MostCited, JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type
             FROM (SELECT WorksCited."doi_mention", COUNT(WorksCited."doi_mention") as MostCited
             FROM WorksCited
             GROUP BY WorksCited."doi_mention"
             ORDER BY MostCited DESC
             LIMIT 1)
             LEFT JOIN Publication ON Publication.doi == "doi_mention"
+            LEFT JOIN JournalArticles ON Publication.doi == JournalArticles.doi
+            LEFT JOIN BookChapter ON Publication.doi == BookChapter.doi
             LEFT JOIN Author ON Publication.doi == Author.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi"""
             freqMat = read_sql(query, con)
@@ -230,9 +236,11 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getPublicationInVenue(self, venueId):
         with connect(self.dbPath) as con:
-            query = """ SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, Publication.publication_year, Publication.type
+            query = """ SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, Publication.publication_year, JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
+            LEFT JOIN JournalArticles ON Publication.doi == JournalArticles.doi
+            LEFT JOIN BookChapter ON Publication.doi == BookChapter.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             LEFT JOIN Venues_doi ON Venues_doi.doi == Publication.doi
             WHERE Venues_doi.venue_id like '{0}';""".format(venueId)
@@ -319,9 +327,11 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getPublicationsByAuthorName(self, authorPartialName):
         with connect(self.dbPath) as con:
             query = """
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, Publication.type
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
+            LEFT JOIN JournalArticles ON Publication.doi == JournalArticles.doi
+            LEFT JOIN BookChapter ON Publication.doi == BookChapter.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             LEFT JOIN Venues_doi ON Venues_doi.doi == Publication.doi
             WHERE family COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%' OR given COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%';""".format(

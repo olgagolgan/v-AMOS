@@ -64,14 +64,9 @@ class TriplestoreDataProcessor(TriplestoreProcessor):
                 for idx, row in table.iterrows():
                     local_id = row["id"]
                     subj = URIRef(base_url + "/" + local_id)
-                    if row["venue_type"] == "journal":
-                        my_graph.add((subj, RDF.type, Journal))
-                    elif row["venue_type"] == "book":
-                        my_graph.add((subj, RDF.type, Book))
-                    if row["type"] == "journal-article":
-                        my_graph.add((subj, RDF.type, JournalArticle))
-                    elif row["type"] == "book-chapter":
-                        my_graph.add((subj, RDF.type, BookChapter))
+
+                    my_graph.add((subj, RDF.type, Literal(row["type"])))
+
                     my_graph.add((subj, DOI, Literal(row["id"])))
                     my_graph.add((subj, title, Literal(row["title"])))
                     my_graph.add((subj, publicationYear, Literal(row["publication_year"])))
@@ -119,15 +114,17 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getPublicationsPublishedInYear(self, year):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?type
             WHERE {
-            {SELECT ?orcid ?title ?doi ?publication_venue ?publisher ?publication_year
+            {SELECT ?orcid ?title ?doi ?publication_venue ?publisher ?publication_year ?type
             WHERE{
               ?s schema:creator ?orcid.
               ?s schema:title ?title.
               ?s schema:productID ?doi.
               ?s schema:publishedBy ?publisher.
               ?s schema:isPartOf ?publication_venue.
+              ?s rdf:type ?type.
               ?s schema:datePublished ?publication_year.
               ?s schema:datePublished """ + str(year) + """ 
             }              
@@ -143,7 +140,8 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getPublicationsByAuthorId(self, id):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?type
             WHERE {
             {SELECT ?orcid ?given ?family
             WHERE{
@@ -158,6 +156,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
           ?s schema:productID ?doi.
           ?s schema:publishedBy ?publisher.
           ?s schema:isPartOf ?publication_venue.
+          ?s rdf:type ?type.
           ?s schema:datePublished ?publication_year                       
         }"""
         df_sparql = get(self.endpointUrl, qry, True)
@@ -166,7 +165,8 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getMostCitedPublication(self):
         qry = """
                 PREFIX schema: <https://schema.org/>
-                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year (COUNT(?cite) as ?mostCited)
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?type (COUNT(?cite) as ?mostCited)
                 WHERE {
                 {
                 SELECT ?orcid ?given ?family
@@ -182,9 +182,10 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                   ?s schema:publishedBy ?publisher.
                   ?s schema:isPartOf ?publication_venue.
                   ?s schema:datePublished ?publication_year.
+                  ?s rdf:type ?type.
                   ?s schema:citation ?cite
                 }
-                GROUP BY ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year
+                GROUP BY ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?type
                 ORDER BY DESC(?mostCited)
                 LIMIT 1
             """
@@ -232,7 +233,8 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getPublicationInVenue(self, venueId):
         qry = """ 
                 PREFIX schema: <https://schema.org/>
-                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publication_year
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publication_year ?type
                 WHERE {
                 {SELECT ?orcid ?given ?family
                 WHERE{
@@ -246,6 +248,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
               ?s schema:productID ?doi.
               ?s schema:datePublished ?publication_year.
               ?s schema:isPartOf ?publication_venue.
+              ?s rdf:type ?type.
               ?s schema:VirtualLocation ?venue_id.
               ?s schema:VirtualLocation '""" + str(venueId) + """'
             }"""
@@ -365,6 +368,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
             {
                 SELECT ?orcid
                 WHERE {
+                    
                     ?y schema:productID '""" + str(publicationId) + """'.
                     ?y schema:creator ?orcid}
             }
@@ -376,13 +380,15 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getPublicationsByAuthorName(self, authorPartialName):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?doi ?title ?publication_year ?publication_venue ?orcid ?given ?family
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+            SELECT ?doi ?title ?publication_year ?publication_venue ?orcid ?given ?family ?type
             WHERE 
             {
                 ?x schema:creator ?orcid.
                 ?x schema:productID ?doi.
                 ?x schema:title ?title.
                 ?x schema:datePublished ?publication_year.
+                ?x rdf:type ?type.
                 ?x schema:isPartOf ?publication_venue.
 
             {
@@ -476,19 +482,20 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                 ?x schema:publishedBy ?id.
             }}}
         """
+
         df_sparql = get(self.endpointUrl, qry, True)
         return df_sparql
 
-
 # setting the environment for testing based on our dataset
 
-# graph1 = TriplestoreProcessor()
-# graph2 = TriplestoreDataProcessor()
-# graph2.setEndpointUri("http://127.0.0.1:9999/blazegraph")
-# graph2.uploadData("data/graph_publications.csv")
-# graph2.uploadData("data/graph_other_data.json")
-# trp_qp = TriplestoreQueryProcessor()
-# trp_qp.setEndpointUri("http://127.0.0.1:9999/blazegraph")
-# ciao = trp_qp.getPublicationsPublishedInYear(2020)
-# print(ciao)
+
+graph1 = TriplestoreProcessor()
+graph2 = TriplestoreDataProcessor()
+graph2.setEndpointUrl("http://127.0.0.1:9999/blazegraph/sparql")
+# print(graph2.uploadData("data/graph_publications.csv"))
+# print(graph2.uploadData("data/graph_other_data.json"))
+trp_qp = TriplestoreQueryProcessor()
+trp_qp.setEndpointUrl("http://127.0.0.1:9999/blazegraph/sparql")
+ciao = trp_qp.getCitedOfPublication("doi:10.1016/j.websem.2021.100655")
+print(ciao)
 

@@ -111,10 +111,15 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
+            type = row["type"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
-            pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            if(type == "journal-article"):
+                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            else:
+                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            
             pub_list_object.append(pub)
 
         return pub_list_object
@@ -131,10 +136,14 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
+            type = row["type"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
-            pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            if(type == "journal-article"):
+                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            else:
+                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)            
             pub_list_object.append(pub)
 
         return pub_list_object
@@ -151,10 +160,14 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
+            type = row["type"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
-            pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            if(type == "journal-article"):
+                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            else:
+                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
         return pub
         
     def getMostCitedVenue(self): # Replaced 03-07-22
@@ -190,10 +203,14 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
+            type = row["type"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
-            pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            if(type == "journal-article"):
+                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            else:
+                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list_object.append(pub)
 
         return pub_list_object
@@ -313,10 +330,14 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
+            type = row["type"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
-            pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            if(type == "journal-article"):
+                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+            else:
+                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list_object.append(pub)
 
         return pub_list_object

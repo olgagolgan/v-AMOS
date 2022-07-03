@@ -94,7 +94,7 @@ class RelationalDataProcessor(RelationalProcessor):
                 csvData = pd.read_csv(path)
 
                 # ========= PUBLICATION ==============
-                publicationRaw = csvData[["id", "title", "publication_year", "publication_venue"]]
+                publicationRaw = csvData[["id", "title", "publication_year", "publication_venue", "type"]]
                 publication = publicationRaw.copy()
                 publication.rename(columns={'id': 'doi'}, inplace=True)
 
@@ -152,7 +152,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getPublicationsPublishedInYear(self, year):
         with connect(self.dbPath) as con:
             query = """ 
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, Publication.type
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
@@ -166,7 +166,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getPublicationsByAuthorId(self, id):
         with connect(self.dbPath) as con:
             query = """
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, Publication.type
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
@@ -180,7 +180,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getMostCitedPublication(self):
         with connect(self.dbPath) as con:
             query = """
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, MostCited
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, MostCited, Publication.type
             FROM (SELECT WorksCited."doi_mention", COUNT(WorksCited."doi_mention") as MostCited
             FROM WorksCited
             GROUP BY WorksCited."doi_mention"
@@ -230,7 +230,7 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getPublicationInVenue(self, venueId):
         with connect(self.dbPath) as con:
-            query = """ SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, Publication.publication_year
+            query = """ SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, Publication.publication_year, Publication.type
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
@@ -319,7 +319,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getPublicationsByAuthorName(self, authorPartialName):
         with connect(self.dbPath) as con:
             query = """
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, Publication.type
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi

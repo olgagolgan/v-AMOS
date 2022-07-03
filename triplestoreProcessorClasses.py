@@ -489,13 +489,13 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
 # setting the environment for testing based on our dataset
 
 
-graph1 = TriplestoreProcessor()
-graph2 = TriplestoreDataProcessor()
-graph2.setEndpointUrl("http://127.0.0.1:9999/blazegraph/sparql")
+# graph1 = TriplestoreProcessor()
+# graph2 = TriplestoreDataProcessor()
+# graph2.setEndpointUrl("http://127.0.0.1:9999/blazegraph/sparql")
 # print(graph2.uploadData("data/graph_publications.csv"))
 # print(graph2.uploadData("data/graph_other_data.json"))
-trp_qp = TriplestoreQueryProcessor()
-trp_qp.setEndpointUrl("http://127.0.0.1:9999/blazegraph/sparql")
-ciao = trp_qp.getCitedOfPublication("doi:10.1016/j.websem.2021.100655")
-print(ciao)
+# trp_qp = TriplestoreQueryProcessor()
+# trp_qp.setEndpointUrl("http://127.0.0.1:9999/blazegraph/sparql")
+# ciao = trp_qp.getCitedOfPublication("doi:10.1016/j.websem.2021.100655")
+# print(ciao)
 

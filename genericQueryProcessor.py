@@ -3,6 +3,15 @@ from relationalProcessorClasses import *
 from pandas import concat
 from dataModelClasses import *
 
+# Added 03-07-22
+def bestRow(df, colName):
+    maxVal = df[colName].max()
+    contentCol = []
+    for idx, val in df[colName].iteritems():
+        if val == maxVal:
+            contentCol.append(idx)
+    return df.loc[contentCol]
+# ---------------
 
 class GenericQueryProcessor:
     def __init__(self, queryProcessor=None):
@@ -81,6 +90,7 @@ class GenericQueryProcessor:
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["venue_id"]
             title = row["title"]
+            publisher = row["id"]
             publishers = self.getPublishers(publisher)
             venue = Venue(identifier, title, publishers)
             return venue
@@ -135,6 +145,7 @@ class GenericQueryProcessor:
             dataframes.append(qprocessor.getMostCitedPublication())
         df_union = concat(dataframes, ignore_index=True)
         df_union_no_dupl = df_union.drop_duplicates()
+        df_union_no_dupl = bestRow(df_union_no_dupl, "MostCited") #Added 03-07-2022
 
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["doi"]
@@ -145,20 +156,10 @@ class GenericQueryProcessor:
             cites_list = self.getCitation(identifier)
             pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
         return pub
-
-    def getMostCitedVenue(self):
-        dataframes = []
-        for qprocessor in self.queryProcessor:
-            dataframes.append(qprocessor.getMostCitedVenue())
-        df_union = concat(dataframes, ignore_index=True)
-        df_union_no_dupl = df_union.drop_duplicates()
-
-        for row_idx, row in df_union_no_dupl.iterrows():
-            identifier = row["venue_id"]
-            title = row["title"]
-            publishers = self.getPublishers(publisher)
-            venue = Venue(identifier, title, publishers)
-            return venue
+        
+    def getMostCitedVenue(self): # Replaced 03-07-22
+        mostCitedPublication = GenericQueryProcessor.getMostCitedPublication(self) 
+        return mostCitedPublication.getPublicationVenue()
 
     def getVenuesByPublisherId(self, publisherID):
         dataframes = []
@@ -343,8 +344,8 @@ class GenericQueryProcessor:
 triple_uri = "http://127.0.0.1:9999/blazegraph/sparql"
 trp_dp = TriplestoreDataProcessor()
 trp_dp.setEndpointUrl(triple_uri)
-# # print(trp_dp.uploadData("data/graph_publications.csv"))
-# # print(trp_dp.uploadData("data/graph_other_data.json"))
+# print(trp_dp.uploadData("data/graph_publications.csv"))
+# print(trp_dp.uploadData("data/graph_other_data.json"))
 trp_qp = TriplestoreQueryProcessor()
 trp_qp.setEndpointUrl(triple_uri)
 
@@ -367,18 +368,22 @@ generic.addQueryProcessor(rel_qp)
 
 
 #1st query
-my_m1 = generic.getPublicationsPublishedInYear(2020)
-print(my_m1)
-print("-----------------------------------")
-print(my_m1[0].getPublicationVenue())
-print("-----------------------------------")
+# my_m1 = generic.getPublicationsPublishedInYear(2020)
+# print(my_m1)
+# print("-----------------------------------")
+# print(my_m1[0].getPublicationVenue())
+# print("-----------------------------------")
 
 
 #2nd query
 # my_m2 = generic.getPublicationsByAuthorId("0000-0002-5074-3254")
 # print(my_m2)
 # print("-----------------------------------")
-#print(my_m2[0].getTitle())
+# print(my_m2[0].getTitle())
+# myVen = my_m2[0].getPublicationVenue()
+# myPub = myVen.getPublisher()
+# print(myVen, "\n", myVen.getTitle())
+# print(myPub, "\n", myPub[0].getName())
 # print("-----------------------------------")
 
 #3rd query
@@ -386,21 +391,25 @@ print("-----------------------------------")
 # print(my_m3)
 # print("-----------------------------------")
 # myObj = my_m3.getPublicationVenue()
-# print(myObj)
+# print(myObj.getTitle())
+# print(myObj.getIds())
+# print(myObj.getPublisher())
 # print("-----------------------------------")
 
-#4th query
+# 4th query
 # my_m4 = generic.getMostCitedVenue()
 # print(my_m4)
 # print("-----------------------------------")
-# print(my_m4[1].getTitle())
+# print(my_m4.getTitle())
+# print(my_m4.getIds())
+# print(my_m4.getPublisher())
 # print("-----------------------------------")
 
 #5th query
 # my_m5 = generic.getVenuesByPublisherId("crossref:78")
 # print(my_m5)
 # print("-----------------------------------")
-# myObj = my_m5[1][0]
+# myObj = my_m5[1]
 # print(myObj.getPublisher())
 # print("-----------------------------------")
 

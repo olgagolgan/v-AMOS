@@ -115,9 +115,9 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         qry = """
             PREFIX schema: <https://schema.org/>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?type
+            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?issue ?volume ?chapter ?type 
             WHERE {
-            {SELECT ?orcid ?title ?doi ?publication_venue ?publisher ?publication_year ?type
+            {SELECT ?orcid ?title ?doi ?publication_venue ?publisher ?publication_year ?issue ?volume ?chapter ?type
             WHERE{
               ?s schema:creator ?orcid.
               ?s schema:title ?title.
@@ -125,6 +125,9 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
               ?s schema:publishedBy ?publisher.
               ?s schema:isPartOf ?publication_venue.
               ?s rdf:type ?type.
+              ?s schema:issueNumber ?issue.
+              ?s schema:volumeNumber ?volume.
+              ?s schema:Chapter ?chapter.
               ?s schema:datePublished ?publication_year.
               ?s schema:datePublished """ + str(year) + """ 
             }              
@@ -141,7 +144,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         qry = """
             PREFIX schema: <https://schema.org/>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?type
+            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?issue ?volume ?chapter ?type
             WHERE {
             {SELECT ?orcid ?given ?family
             WHERE{
@@ -157,6 +160,9 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
           ?s schema:publishedBy ?publisher.
           ?s schema:isPartOf ?publication_venue.
           ?s rdf:type ?type.
+          ?s schema:issueNumber ?issue.
+          ?s schema:volumeNumber ?volume.
+          ?s schema:Chapter ?chapter.
           ?s schema:datePublished ?publication_year                       
         }"""
         df_sparql = get(self.endpointUrl, qry, True)
@@ -166,7 +172,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         qry = """
                 PREFIX schema: <https://schema.org/>
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?type (COUNT(?cite) as ?mostCited)
+                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?issue ?volume ?chapter ?type (COUNT(?cite) as ?mostCited)
                 WHERE {
                 {
                 SELECT ?orcid ?given ?family
@@ -183,9 +189,12 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                   ?s schema:isPartOf ?publication_venue.
                   ?s schema:datePublished ?publication_year.
                   ?s rdf:type ?type.
+                  ?s schema:issueNumber ?issue.
+                  ?s schema:volumeNumber ?volume.
+                  ?s schema:Chapter ?chapter.
                   ?s schema:citation ?cite
                 }
-                GROUP BY ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?type
+                GROUP BY ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?issue ?volume ?chapter ?type
                 ORDER BY DESC(?mostCited)
                 LIMIT 1
             """
@@ -234,7 +243,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         qry = """ 
                 PREFIX schema: <https://schema.org/>
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publication_year ?type
+                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publication_year ?issue ?volume ?chapter ?type
                 WHERE {
                 {SELECT ?orcid ?given ?family
                 WHERE{
@@ -249,6 +258,9 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
               ?s schema:datePublished ?publication_year.
               ?s schema:isPartOf ?publication_venue.
               ?s rdf:type ?type.
+              ?s schema:issueNumber ?issue.
+              ?s schema:volumeNumber ?volume.
+              ?s schema:Chapter ?chapter.
               ?s schema:VirtualLocation ?venue_id.
               ?s schema:VirtualLocation '""" + str(venueId) + """'
             }"""
@@ -381,7 +393,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         qry = """
             PREFIX schema: <https://schema.org/>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-            SELECT ?doi ?title ?publication_year ?publication_venue ?orcid ?given ?family ?type
+            SELECT ?doi ?title ?publication_year ?publication_venue ?orcid ?given ?family ?issue ?volume ?chapter ?type
             WHERE 
             {
                 ?x schema:creator ?orcid.
@@ -389,6 +401,9 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
                 ?x schema:title ?title.
                 ?x schema:datePublished ?publication_year.
                 ?x rdf:type ?type.
+                ?x schema:issueNumber ?issue.
+                ?x schema:volumeNumber ?volume.
+                ?x schema:Chapter ?chapter.
                 ?x schema:isPartOf ?publication_venue.
 
             {
@@ -492,10 +507,10 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
 # graph1 = TriplestoreProcessor()
 # graph2 = TriplestoreDataProcessor()
 # graph2.setEndpointUrl("http://127.0.0.1:9999/blazegraph/sparql")
-# print(graph2.uploadData("data/graph_publications.csv"))
-# print(graph2.uploadData("data/graph_other_data.json"))
+# # print(graph2.uploadData("data/graph_publications.csv"))
+# # print(graph2.uploadData("data/graph_other_data.json"))
 # trp_qp = TriplestoreQueryProcessor()
 # trp_qp.setEndpointUrl("http://127.0.0.1:9999/blazegraph/sparql")
-# ciao = trp_qp.getCitedOfPublication("doi:10.1016/j.websem.2021.100655")
+# ciao = trp_qp.getPublicationsPublishedInYear("2020")
 # print(ciao)
 

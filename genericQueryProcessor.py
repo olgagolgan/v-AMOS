@@ -112,11 +112,16 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             type = row["type"]
+            issue = row["issue"]
+            volume = row["volume"]
+            chapter = row["chapter"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
             if(type == "journal-article"):
-                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
+            elif(type == "book-chapter"):
+                pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
             else:
                 pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             
@@ -137,13 +142,19 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             type = row["type"]
+            issue = row["issue"]
+            volume = row["volume"]
+            chapter = row["chapter"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
             if(type == "journal-article"):
-                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
+            elif(type == "book-chapter"):
+                pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
             else:
-                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)            
+                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+
             pub_list_object.append(pub)
 
         return pub_list_object
@@ -161,11 +172,16 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             type = row["type"]
+            issue = row["issue"]
+            volume = row["volume"]
+            chapter = row["chapter"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
             if(type == "journal-article"):
-                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
+            elif(type == "book-chapter"):
+                pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
             else:
                 pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
         return pub
@@ -204,11 +220,16 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             type = row["type"]
+            issue = row["issue"]
+            volume = row["volume"]
+            chapter = row["chapter"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
             if(type == "journal-article"):
-                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
+            elif(type == "book-chapter"):
+                pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
             else:
                 pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list_object.append(pub)
@@ -331,11 +352,16 @@ class GenericQueryProcessor:
             publicationYear = row["publication_year"]
             title = row["title"]
             type = row["type"]
+            issue = row["issue"]
+            volume = row["volume"]
+            chapter = row["chapter"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
             if(type == "journal-article"):
-                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
+            elif(type == "book-chapter"):
+                pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
             else:
                 pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             pub_list_object.append(pub)

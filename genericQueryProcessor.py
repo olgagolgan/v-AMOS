@@ -388,25 +388,25 @@ class GenericQueryProcessor:
 # setting the environment for testing, the commands have been commented in order to allow the user to set them freely
 
 
-triple_uri = "http://127.0.0.1:9999/blazegraph/sparql"
-trp_dp = TriplestoreDataProcessor()
-trp_dp.setEndpointUrl(triple_uri)
+# triple_uri = "http://127.0.0.1:9999/blazegraph/sparql"
+# trp_dp = TriplestoreDataProcessor()
+# trp_dp.setEndpointUrl(triple_uri)
 # print(trp_dp.uploadData("data/graph_publications.csv"))
 # print(trp_dp.uploadData("data/graph_other_data.json"))
-trp_qp = TriplestoreQueryProcessor()
-trp_qp.setEndpointUrl(triple_uri)
+# trp_qp = TriplestoreQueryProcessor()
+# trp_qp.setEndpointUrl(triple_uri)
 
-rel_path = "tester.db"
-rel_dp = RelationalDataProcessor()
-rel_dp.setDbPath(rel_path)
+# rel_path = "tester.db"
+# rel_dp = RelationalDataProcessor()
+# rel_dp.setDbPath(rel_path)
 # rel_dp.uploadData("data/relational_publications.csv")
 # rel_dp.uploadData("data/relationalJSON.json")
-rel_qp = RelationalQueryProcessor()
-rel_qp.setDbPath(rel_path)
+# rel_qp = RelationalQueryProcessor()
+# rel_qp.setDbPath(rel_path)
 
-generic = GenericQueryProcessor()
-generic.addQueryProcessor(trp_qp)
-generic.addQueryProcessor(rel_qp)
+# generic = GenericQueryProcessor()
+# generic.addQueryProcessor(trp_qp)
+# generic.addQueryProcessor(rel_qp)
 
 
 

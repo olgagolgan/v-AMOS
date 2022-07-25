@@ -222,7 +222,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
     def getVenuesByPublisherId(self, id):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?publication_venue ?venue_id ?publisher ?name ?id
+            SELECT ?publication_venue ?venue_id ?id ?name 
             WHERE{
            {SELECT ?name ?id
             WHERE {
@@ -232,8 +232,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
             }
            }
            ?s schema:isPartOf ?publication_venue.
-           ?s schema:VirtualLocation ?venue_id.
-           ?s schema:publishedBy ?publisher
+           ?s schema:VirtualLocation ?venue_id
             }
         """
         df_sparql = get(self.endpointUrl, qry, True)
@@ -393,7 +392,7 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         qry = """
             PREFIX schema: <https://schema.org/>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-            SELECT ?doi ?title ?publication_year ?publication_venue ?orcid ?given ?family ?issue ?volume ?chapter ?type
+            SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publication_year ?issue ?volume ?chapter ?type
             WHERE 
             {
                 ?x schema:creator ?orcid.

@@ -327,7 +327,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getPublicationsByAuthorName(self, authorPartialName):
         with connect(self.dbPath) as con:
             query = """
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, Publication.publication_year, JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type
             FROM Publication
             LEFT JOIN Author ON Publication.doi == Author.doi
             LEFT JOIN JournalArticles ON Publication.doi == JournalArticles.doi

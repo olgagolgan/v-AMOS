@@ -431,13 +431,11 @@ generic.addQueryProcessor(rel_qp)
 
 
 #2nd query
-my_m2 = generic.getPublicationsByAuthorId("0000-0002-2440-3993")
-print(my_m2)
-print("-----------------------------------")
-print(my_m2[0].getTitle())
-print(my_m2[0].getIds())
-print(my_m2[0].getCitedPublications())
-print("-----------------------------------")
+# my_m2 = generic.getPublicationsByAuthorId("0000-0002-2440-3993")
+# print(my_m2)
+# print("-----------------------------------")
+# print(my_m2[0].getIds())
+# print("-----------------------------------")
 
 #3rd query
 # my_m3 = generic.getMostCitedPublication()
@@ -485,7 +483,7 @@ print("-----------------------------------")
 # print(myX)
 
 #7th query
-# my_m7 = generic.getJournalArticlesInIssue("3", "28", "issn:1066-8888")
+# my_m7 = generic.getJournalArticlesInIssue("1", "126", "issn:1588-2861")
 # print(my_m7)
 # print("-----------------------------------")
 # print(my_m7[0].getIssue())
@@ -495,18 +493,20 @@ print("-----------------------------------")
 # my_m7_2 = generic.getJournalArticlesInIssue("7", "14", "issn:1996-1073")
 # print(my_m7_2)
 # print("-----------------------------------")
-# print(my_m7_2[0].getIssue())
+#  print(my_m7_2[0].getIssue())
 # print("-----------------------------------")
 
 #TEST REL
-# my_m7_3 = generic.getJournalArticlesInIssue(9, 126, "issn:0138-9130")
+# my_m7_3 = generic.getJournalArticlesInIssue("9", "126", "issn:0138-9130")
 # print(my_m7_3)
 
 
 #8th query
-# my_m8 = generic.getJournalArticlesInVolume(28, "issn:1066-8888")
+# my_m8 = generic.getJournalArticlesInVolume("28", "issn:1066-8888")
 # print(my_m8)
 # print("-----------------------------------")
+# my_m8_2 = generic.getJournalArticlesInVolume("7","issn:2304-6775")
+# print(my_m8_2)
 # print (my_m8[1][0].getTitle())
 # print("-----------------------------------")
 
@@ -533,8 +533,8 @@ print("-----------------------------------")
 # print("-----------------------------------")
 
 #12th query
-# my_m12 = generic.getPublicationsByAuthorName("Peroni")
-# print(my_m12)
+my_m12 = generic.getPublicationsByAuthorName("Peroni")
+print(my_m12)
 # print("-----------------------------------")
 # print(my_m12[0].getCitedPublications())
 # print("-----------------------------------")

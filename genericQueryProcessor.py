@@ -42,9 +42,18 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            chapter = row["chapter"]
+            issue= row["issue"]
+            volume= row["volume"]
+            type = row["type"]
+            publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
-            cited_pub = Publication(identifier, publicationYear, title, "", authors, publicationVenue)
+            if(type == "journal-article"):
+                cited_pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
+            elif(type == "book-chapter"):
+                cited_pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
+            else:
+                cited_pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
             cites_list.append(cited_pub)
         return cites_list
 
@@ -61,8 +70,7 @@ class GenericQueryProcessor:
             identifier = row["id"]
             publisher_name = row["name"]
             organization = Organization(identifier, publisher_name)
-        organizations_list.append(organization)
-        return organizations_list
+        return organization
 
     def getAuthors(self, identifier):
         dataframes = []
@@ -200,7 +208,7 @@ class GenericQueryProcessor:
         venue_list_object = list()
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["venue_id"]
-            title = row["title"]
+            title = row["publication_venue"]
             publishers = self.getPublishers(publisherID)
             venue = Venue(identifier, title, publishers)
             venue_list_object.append(venue)
@@ -272,7 +280,7 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            publicationVenue = self.getVenueByPublicationId(identifier)
             issue = row["issue"]
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
@@ -293,7 +301,7 @@ class GenericQueryProcessor:
             identifier = row["doi"]
             publicationYear = row["publication_year"]
             title = row["title"]
-            publicationVenue = row["publication_venue"]
+            publicationVenue = self.getVenueByPublicationId(identifier)
             issue = row["issue"]
             volume = row["volume"]
             authors = self.getAuthors(identifier)
@@ -388,25 +396,25 @@ class GenericQueryProcessor:
 # setting the environment for testing, the commands have been commented in order to allow the user to set them freely
 
 
-# triple_uri = "http://127.0.0.1:9999/blazegraph/sparql"
-# trp_dp = TriplestoreDataProcessor()
-# trp_dp.setEndpointUrl(triple_uri)
+triple_uri = "http://127.0.0.1:9999/blazegraph/sparql"
+trp_dp = TriplestoreDataProcessor()
+trp_dp.setEndpointUrl(triple_uri)
 # print(trp_dp.uploadData("data/graph_publications.csv"))
 # print(trp_dp.uploadData("data/graph_other_data.json"))
-# trp_qp = TriplestoreQueryProcessor()
-# trp_qp.setEndpointUrl(triple_uri)
+trp_qp = TriplestoreQueryProcessor()
+trp_qp.setEndpointUrl(triple_uri)
 
-# rel_path = "tester.db"
-# rel_dp = RelationalDataProcessor()
-# rel_dp.setDbPath(rel_path)
+rel_path = "tester.db"
+rel_dp = RelationalDataProcessor()
+rel_dp.setDbPath(rel_path)
 # rel_dp.uploadData("data/relational_publications.csv")
 # rel_dp.uploadData("data/relationalJSON.json")
-# rel_qp = RelationalQueryProcessor()
-# rel_qp.setDbPath(rel_path)
+rel_qp = RelationalQueryProcessor()
+rel_qp.setDbPath(rel_path)
 
-# generic = GenericQueryProcessor()
-# generic.addQueryProcessor(trp_qp)
-# generic.addQueryProcessor(rel_qp)
+generic = GenericQueryProcessor()
+generic.addQueryProcessor(trp_qp)
+generic.addQueryProcessor(rel_qp)
 
 
 
@@ -423,21 +431,24 @@ class GenericQueryProcessor:
 
 
 #2nd query
-# my_m2 = generic.getPublicationsByAuthorId("0000-0002-5074-3254")
-# print(my_m2)
-# print("-----------------------------------")
-# print(my_m2[0].getTitle())
-# myVen = my_m2[0].getPublicationVenue()
-# myPub = myVen.getPublisher()
-# print(myVen, "\n", myVen.getTitle())
-# print(myPub, "\n", myPub[0].getName())
-# print("-----------------------------------")
+my_m2 = generic.getPublicationsByAuthorId("0000-0002-2440-3993")
+print(my_m2)
+print("-----------------------------------")
+print(my_m2[0].getTitle())
+print(my_m2[0].getIds())
+print(my_m2[0].getCitedPublications())
+print("-----------------------------------")
 
 #3rd query
 # my_m3 = generic.getMostCitedPublication()
 # print(my_m3)
 # print("-----------------------------------")
+# print(my_m3.getTitle())
+# print(my_m3.getIds())
+# print(my_m3.getCitedPublications())
 # myObj = my_m3.getPublicationVenue()
+# print(myObj)
+# print("-----------------------------")
 # print(myObj.getTitle())
 # print(myObj.getIds())
 # print(myObj.getPublisher())
@@ -454,28 +465,34 @@ class GenericQueryProcessor:
 
 #5th query
 # my_m5 = generic.getVenuesByPublisherId("crossref:78")
-# print(my_m5)
+# # print(my_m5)
 # print("-----------------------------------")
 # myObj = my_m5[1]
+# print(myObj)
+# print(myObj.getIds())
 # print(myObj.getPublisher())
+# print(myObj.getTitle())
 # print("-----------------------------------")
 
 #6th query
 # my_m6 = generic.getPublicationInVenue("issn:0944-1344")
 # print(my_m6)
 # print("-----------------------------------")
-# print(my_m6[1][0].getCitedPublications())
+# myO = my_m6[1].getPublicationVenue()
+# print(myO)
 # print("-----------------------------------")
+# myX = myO.getPublisher()
+# print(myX)
 
 #7th query
-# my_m7 = generic.getJournalArticlesInIssue(3, 28, "issn:1066-8888")
+# my_m7 = generic.getJournalArticlesInIssue("3", "28", "issn:1066-8888")
 # print(my_m7)
 # print("-----------------------------------")
 # print(my_m7[0].getIssue())
 # print("-----------------------------------")
 
 #TEST GRAPH
-# my_m7_2 = generic.getJournalArticlesInIssue(7, 14, "issn:1996-1073")
+# my_m7_2 = generic.getJournalArticlesInIssue("7", "14", "issn:1996-1073")
 # print(my_m7_2)
 # print("-----------------------------------")
 # print(my_m7_2[0].getIssue())
@@ -496,6 +513,10 @@ class GenericQueryProcessor:
 #9th query
 # my_m9 = generic.getJournalArticlesInJournal("issn:1066-8888")
 # print(my_m9)
+# print("-----------------------------------")
+# print (my_m9[0].getPublicationVenue())
+# print("-----------------------------------")
+
 
 #10th query
 # my_m10 = generic.getProceedingsByEvent("")

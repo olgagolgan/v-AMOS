@@ -184,7 +184,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getMostCitedPublication(self):
         with connect(self.dbPath) as con:
             query = """
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, MostCited, JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type
+            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type, MostCited
             FROM (SELECT WorksCited."doi_mention", COUNT(WorksCited."doi_mention") as MostCited
             FROM WorksCited
             GROUP BY WorksCited."doi_mention"
@@ -222,7 +222,7 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getVenuesByPublisherId(self, id):
         with connect(self.dbPath) as con:
-            query = """SELECT  Publication.title, Venues_doi.venue_id, Publication.publication_venue, Publisher.name, Publisher.id
+            query = """SELECT Publication.publication_venue, Venues_doi.venue_id, Publisher.id, Publisher.name
             FROM Publication
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             LEFT JOIN Venues_doi ON Venues_doi.doi == Publication.doi
@@ -368,11 +368,14 @@ class RelationalQueryProcessor(RelationalProcessor):
             output = pd.DataFrame()
             for label, content in worksCited.iteritems():
                 for doiCited in content:
-                    query = """ SELECT Author.doi, Author.orcid, Author.given, Author.family,  Publication.title,  Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year
-                    FROM Publication
-                    LEFT JOIN Author ON Publication.doi == Author.doi
-                    LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
-                    WHERE Publication.doi = '{0}';""".format(doiCited)
+                    query = """ SELECT Author.doi, Author.orcid, Author.given, Author.family,  Publication.title,  Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year,
+                        JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type
+                        FROM Publication
+                        LEFT JOIN JournalArticles ON Publication.doi == JournalArticles.doi
+                        LEFT JOIN BookChapter ON Publication.doi == BookChapter.doi
+                        LEFT JOIN Author ON Publication.doi == Author.doi
+                        LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
+                        WHERE Publication.doi = '{0}';""".format(doiCited)
                     df_sql = read_sql(query, con)
                     output = pd.concat([output, df_sql])
             return output

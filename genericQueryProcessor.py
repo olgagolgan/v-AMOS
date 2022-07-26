@@ -48,12 +48,17 @@ class GenericQueryProcessor:
             type = row["type"]
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
-            if(type == "journal-article"):
-                cited_pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
-            elif(type == "book-chapter"):
-                cited_pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
+            if (type == "journal-article"):
+                cited_pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors, publicationVenue,
+                                     issue, volume)
+            elif (type == "book-chapter"):
+                cited_pub = BookChapter(identifier, int(publicationYear), title, cites_list, authors, publicationVenue,
+                                  int(chapter))
+            elif (type == "proceedings-paper"):
+                cited_pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors,
+                                           publicationVenue, issue, volume)
             else:
-                cited_pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+                cited_pub = Publication(identifier, int(publicationYear), title, cites_list, authors, publicationVenue)
             cites_list.append(cited_pub)
         return cites_list
 
@@ -84,7 +89,7 @@ class GenericQueryProcessor:
             orcid = row["orcid"]
             givenName = row["given"]
             familyName = row["family"]
-            author = str(orcid) + ", " + str(givenName) + ", " + str(familyName)
+            author = Person(orcid, givenName, familyName)
             authors.add(author)
         return authors
 
@@ -99,8 +104,17 @@ class GenericQueryProcessor:
             identifier = row["venue_id"]
             title = row["title"]
             publisher = row["id"]
+            venue_type = row["venue_type"]
+            event = row["event"]
             publishers = self.getPublishers(publisher)
-            venue = Venue(identifier, title, publishers)
+            if (venue_type == "journal"):
+                venue = Journal(identifier, title, publishers)
+            elif (venue_type == "book"):
+                venue = Book(identifier, title, publishers)
+            elif (venue_type == "proceedings"):
+                venue = Proceedings(identifier, title, publishers, event)
+            else:
+                venue = Venue(identifier, title, publishers)
             return venue
 
 
@@ -126,13 +140,17 @@ class GenericQueryProcessor:
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
-            if(type == "journal-article"):
-                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
-            elif(type == "book-chapter"):
-                pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
+            if (type == "journal-article"):
+                pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors, publicationVenue,
+                                     issue, volume)
+            elif (type == "book-chapter"):
+                pub = BookChapter(identifier, int(publicationYear), title, cites_list, authors, publicationVenue,
+                                  int(chapter))
+            elif (type == "proceedings-paper"):
+                pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors,
+                                           publicationVenue, issue, volume)
             else:
-                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
-            
+                pub = Publication(identifier, int(publicationYear), title, cites_list, authors, publicationVenue)
             pub_list_object.append(pub)
 
         return pub_list_object
@@ -156,13 +174,17 @@ class GenericQueryProcessor:
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
-            if(type == "journal-article"):
-                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
-            elif(type == "book-chapter"):
-                pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
+            if (type == "journal-article"):
+                pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors, publicationVenue,
+                                     issue, volume)
+            elif (type == "book-chapter"):
+                pub = BookChapter(identifier, int(publicationYear), title, cites_list, authors, publicationVenue,
+                                  int(chapter))
+            elif (type == "proceedings-paper"):
+                pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors,
+                                           publicationVenue, issue, volume)
             else:
-                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
-
+                pub = Publication(identifier, int(publicationYear), title, cites_list, authors, publicationVenue)
             pub_list_object.append(pub)
 
         return pub_list_object
@@ -186,12 +208,17 @@ class GenericQueryProcessor:
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
-            if(type == "journal-article"):
-                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
-            elif(type == "book-chapter"):
-                pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
+            if (type == "journal-article"):
+                pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors, publicationVenue,
+                                     issue, volume)
+            elif (type == "book-chapter"):
+                pub = BookChapter(identifier, int(publicationYear), title, cites_list, authors, publicationVenue,
+                                  int(chapter))
+            elif (type == "proceedings-paper"):
+                pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors,
+                                           publicationVenue, issue, volume)
             else:
-                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+                pub = Publication(identifier, int(publicationYear), title, cites_list, authors, publicationVenue)
         return pub
         
     def getMostCitedVenue(self): # Replaced 03-07-22
@@ -209,8 +236,16 @@ class GenericQueryProcessor:
         for row_idx, row in df_union_no_dupl.iterrows():
             identifier = row["venue_id"]
             title = row["publication_venue"]
+            venue_type = row["venue_type"]
             publishers = self.getPublishers(publisherID)
-            venue = Venue(identifier, title, publishers)
+            if (venue_type == "journal"):
+                venue = Journal(identifier, title, publishers)
+            elif (venue_type == "book"):
+                venue = Book(identifier, title, publishers)
+            elif (venue_type == "proceedings"):
+                venue = Proceedings(identifier, title, publishers, event)
+            else:
+                venue = Venue(identifier, title, publishers)
             venue_list_object.append(venue)
 
         return venue_list_object
@@ -234,12 +269,17 @@ class GenericQueryProcessor:
             publicationVenue = self.getVenueByPublicationId(identifier)
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
-            if(type == "journal-article"):
-                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
-            elif(type == "book-chapter"):
-                pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
+            if (type == "journal-article"):
+                pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors, publicationVenue,
+                                     issue, volume)
+            elif (type == "book-chapter"):
+                pub = BookChapter(identifier, int(publicationYear), title, cites_list, authors, publicationVenue,
+                                  int(chapter))
+            elif (type == "proceedings-paper"):
+                pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors,
+                                           publicationVenue, issue, volume)
             else:
-                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+                pub = Publication(identifier, int(publicationYear), title, cites_list, authors, publicationVenue)
             pub_list_object.append(pub)
 
         return pub_list_object
@@ -323,7 +363,7 @@ class GenericQueryProcessor:
             identifier = row["venue_id"]
             title = row["publication_venue"]
             publisher = row["publisher"]
-            event = eventPartialName
+            event = row["event"]
             proceeding = Proceedings(identifier, title, publisher, event)
             proceedings_list_object.append(proceeding)
 
@@ -367,11 +407,14 @@ class GenericQueryProcessor:
             authors = self.getAuthors(identifier)
             cites_list = self.getCitation(identifier)
             if(type == "journal-article"):
-                pub = JournalArticle(identifier, publicationYear, title, cites_list, authors, publicationVenue, issue, volume)
+                pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors, publicationVenue, issue, volume)
             elif(type == "book-chapter"):
-                pub = BookChapter(identifier, publicationYear, title, cites_list, authors, publicationVenue, chapter)
+                pub = BookChapter(identifier, int(publicationYear), title, cites_list, authors, publicationVenue, int(chapter))
+            elif (type == "proceedings-paper"):
+                pub = JournalArticle(identifier, int(publicationYear), title, cites_list, authors,
+                                           publicationVenue, issue, volume)
             else:
-                pub = Publication(identifier, publicationYear, title, cites_list, authors, publicationVenue)
+                pub = Publication(identifier, int(publicationYear), title, cites_list, authors, publicationVenue)
             pub_list_object.append(pub)
 
         return pub_list_object
@@ -399,16 +442,16 @@ class GenericQueryProcessor:
 triple_uri = "http://127.0.0.1:9999/blazegraph/sparql"
 trp_dp = TriplestoreDataProcessor()
 trp_dp.setEndpointUrl(triple_uri)
-# print(trp_dp.uploadData("data/graph_publications.csv"))
-# print(trp_dp.uploadData("data/graph_other_data.json"))
+# print(trp_dp.uploadData("data/graph_publications2.csv"))
+# print(trp_dp.uploadData("data/graph_other_data2.json"))
 trp_qp = TriplestoreQueryProcessor()
 trp_qp.setEndpointUrl(triple_uri)
 
 rel_path = "tester.db"
 rel_dp = RelationalDataProcessor()
 rel_dp.setDbPath(rel_path)
-# rel_dp.uploadData("data/relational_publications.csv")
-# rel_dp.uploadData("data/relationalJSON.json")
+# rel_dp.uploadData("data/relational_publications2.csv")
+# rel_dp.uploadData("data/relationalJSON2.json")
 rel_qp = RelationalQueryProcessor()
 rel_qp.setDbPath(rel_path)
 
@@ -462,12 +505,12 @@ generic.addQueryProcessor(rel_qp)
 # print("-----------------------------------")
 
 #5th query
-# my_m5 = generic.getVenuesByPublisherId("crossref:78")
-# # print(my_m5)
+# my_m5 = generic.getVenuesByPublisherId("crossref:286")
+# print(my_m5)
 # print("-----------------------------------")
 # myObj = my_m5[1]
 # print(myObj)
-# print(myObj.getIds())
+# print(myObj.getEvent())
 # print(myObj.getPublisher())
 # print(myObj.getTitle())
 # print("-----------------------------------")
@@ -519,7 +562,7 @@ generic.addQueryProcessor(rel_qp)
 
 
 #10th query
-# my_m10 = generic.getProceedingsByEvent("")
+# my_m10 = generic.getProceedingsByEvent("meet")
 # print(my_m10)
 # print("-----------------------------------")
 # print(my_m10[0].getEvent())
@@ -533,10 +576,10 @@ generic.addQueryProcessor(rel_qp)
 # print("-----------------------------------")
 
 #12th query
-my_m12 = generic.getPublicationsByAuthorName("Peroni")
-print(my_m12)
+# my_m12 = generic.getPublicationsByAuthorName("Peroni")
+# print(my_m12)
 # print("-----------------------------------")
-# print(my_m12[0].getCitedPublications())
+# print(my_m12[6].getPublicationYear())
 # print("-----------------------------------")
 
 #13th query

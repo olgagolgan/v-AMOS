@@ -1,10 +1,10 @@
 id,title,type,publication_year,issue,volume,chapter,publication_venue,venue_type,publisher,event
-doi:10.1016/j.websem.2021.100655,Crossing The Chasm Between Ontology Engineering And Application Development: A Survey,journal-article,2021,,70,,Journal Of Web Semantics,journal,crossref:78,ciao
+doi:10.1016/j.websem.2021.100655,Crossing The Chasm Between Ontology Engineering And Application Development: A Survey,journal-article,2021,,70,,Journal Of Web Semantics,journal,crossref:78,
 doi:10.1007/s10115-017-1100-y,Core Techniques Of Question Answering Systems Over Knowledge Bases: A Survey,journal-article,2017,3,55,,Knowledge And Information Systems,journal,crossref:297,
 doi:10.1016/j.websem.2014.03.003,Api-Centric Linked Data Integration: The Open Phacts Discovery Platform Case Study,journal-article,2014,,29,,Journal Of Web Semantics,journal,crossref:78,
-doi:10.1093/nar/gkz997,The Monarch Initiative In 2019: An Integrative Data And Analytic Platform Connecting Phenotypes To Genotypes Across Species,journal-article,2019,D1,48,,Nucleic Acids Research,journal,crossref:286,
+doi:10.1093/nar/gkz997,The Monarch Initiative In 2019: An Integrative Data And Analytic Platform Connecting Phenotypes To Genotypes Across Species,journal-article,2019,D1,48,,Nucleic Acids Research,journal,crossref:286,ciao
 doi:10.3390/publications7030050,Dras-Tic Linked Data: Evenly Distributing The Past,journal-article,2019,3,7,,Publications,journal,crossref:1968,
-doi:10.1017/s0269888920000065,"Ontology Engineering Methodologies For The Evolution Of Living And Reused Ontologies: Status, Trends, Findings And Recommendations",journal-article,2020,,35,,The Knowledge Engineering Review,journal,crossref:56,
+doi:10.1017/s0269888920000065,"Ontology Engineering Methodologies For The Evolution Of Living And Reused Ontologies: Status, Trends, Findings And Recommendations",journal-article,2020,,35,,The Knowledge Engineering Review,journal,crossref:56,ci
 doi:10.3390/info11030129,The Zaragoza’S Knowledge Graph: Open Data To Harness The City Knowledge,journal-article,2020,3,11,,Information,journal,crossref:1968,
 doi:10.1007/s00778-018-0528-3,Summarizing Semantic Graphs: A Survey,journal-article,2018,3,28,,The Vldb Journal,journal,crossref:297,
 doi:10.21105/joss.02731,Grlc: The Git Repository Linked Data Api Constructor.,journal-article,2021,67,6,,Journal Of Open Source Software,journal,crossref:8722,
@@ -499,3 +499,4 @@ doi:10.3390/app10144893,"Cognitive Aspects-Based Short Text Representation With 
 doi:10.1145/3309547,Temporal Relational Ranking For Stock Prediction,journal-article,2019,2,37,,Acm Transactions On Information Systems,journal,crossref:320,
 doi:10.1007/978-3-030-58285-2_27,Fast Pathfinding In Knowledge Graphs Using Word Embeddings,book-chapter,2020,,,1,Lecture Notes In Computer Science - Ki 2020: Advances In Artificial Intelligence,book,crossref:297,
 doi:10.1007/s11280-020-00842-7,Using Context Information To Enhance Simple Question Answering,journal-article,2020,1,24,,World Wide Web,journal,crossref:297,
+doi:10.1007/thisisfake000,Intellectual Structure Of Management Innovation: Bibliometric Analysis,proceedings-paper,2020,,,,Management  Quarterly,proceeding,crossref:297,meeting

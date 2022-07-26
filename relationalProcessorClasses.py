@@ -119,10 +119,22 @@ class RelationalDataProcessor(RelationalProcessor):
                 proceedings_paper.rename(columns={'id': 'doi'}, inplace=True)
 
                 # ========= VENUE NAME  ==============
-                venueNamesPubRaw = csvData[["id", "publication_venue", "publication_year", "publisher"]]
+                venueNamesPubRaw = csvData[["id", "publication_venue", "publication_year", "publisher", "venue_type", "event"]]
                 venueNamesPub = venueNamesPubRaw.copy()
                 venueNamesPub.rename(columns={'id': 'doi'}, inplace=True)
                 venueNamesPub.rename(columns={'publication_venue': 'title'}, inplace=True)
+
+                # ========= JOURNAL ===============
+                journalRaw = csvData.query("venue_type == 'journal'")
+                journalRaw = journalRaw[["id", "publication_venue", "publisher"]]
+                journal = journalRaw.copy()
+                journal.rename(columns={'id': 'doi'}, inplace = True)
+
+                # ========= BOOK ============
+                bookRaw = csvData.query("venue_type == 'book'")
+                bookRaw = bookRaw[["id", "publication_venue", "publisher"]]
+                book = bookRaw.copy()
+                book.rename(columns={'id': 'doi'}, inplace = True)
 
                 # ========= PROCEEDINGS ==============
                 proceedingsRaw = csvData.query("venue_type == 'proceeding'")
@@ -204,7 +216,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getMostCitedVenue(self):
         with connect(self.dbPath) as con:
             query = """ 
-            SELECT Publication.publication_venue, Venues_doi.venue_id, namedVenues_Publisher."publisher", Publication.title, MostCited 
+            SELECT Publication.publication_venue, Venues_doi.venue_id, namedVenues_Publisher."publisher", Publication.title, namedVenues_Publisher.venue_type, event, MostCited 
             FROM 
                 (SELECT WorksCited."doi_mention", COUNT(WorksCited."doi_mention") as MostCited
                 FROM WorksCited
@@ -222,7 +234,7 @@ class RelationalQueryProcessor(RelationalProcessor):
 
     def getVenuesByPublisherId(self, id):
         with connect(self.dbPath) as con:
-            query = """SELECT Publication.publication_venue, Venues_doi.venue_id, Publisher.id, Publisher.name
+            query = """SELECT Publication.publication_venue, Venues_doi.venue_id, Publisher.id, Publisher.name, namedVenues_Publisher.venue_type, event
             FROM Publication
             LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
             LEFT JOIN Venues_doi ON Venues_doi.doi == Publication.doi
@@ -302,7 +314,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getProceedingsByEvent(self, eventPartialName):
         with connect(self.dbPath) as con:
             query = """
-            SELECT Proceedings.publication_venue , Venues_doi.venue_id, Proceedings.publisher
+            SELECT Proceedings.publication_venue , Venues_doi.venue_id, Proceedings.publisher, event
             FROM Proceedings 
             LEFT JOIN Venues_doi ON Venues_doi.doi == Proceedings.doi
             WHERE Proceedings.event COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%{0}%' """.format(eventPartialName)
@@ -383,7 +395,7 @@ class RelationalQueryProcessor(RelationalProcessor):
     def getVenueByPublicationId (self, doi):
         with connect(self.dbPath) as con:
             query = """
-            SELECT venue_id, title, id, name
+            SELECT venue_id, title, id, name, venue_type, event
             FROM Venues_doi
             LEFT JOIN namedVenues_Publisher ON Venues_doi.doi = namedVenues_Publisher.doi
             LEFT JOIN Publisher ON publisher.id = namedVenues_Publisher.publisher

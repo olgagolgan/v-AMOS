@@ -1,5 +1,6 @@
 from sparql_dataframe import get
-from pandas import read_csv
+import pandas as pd
+from pandas import read_csv, concat, DataFrame
 from rdflib import Graph, URIRef, RDF, Literal
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
 import json
@@ -168,77 +169,128 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         df_sparql = get(self.endpointUrl, qry, True)
         return df_sparql
 
+    # def getPublicationData(self, publicationID):
+    #     qry = """
+    #             PREFIX schema: <https://schema.org/>
+    #             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    #             SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?issue ?volume ?chapter ?type (COUNT(?cite) as ?MostCited)
+    #             WHERE {
+    #             {
+    #             SELECT ?orcid ?given ?family
+    #                 WHERE{
+    #                      ?x schema:creator ?orcid.
+    #                      ?x schema:givenName ?given.
+    #                      ?x schema:familyName ?family
+    #                 }
+    #             }
+    #               ?s schema:creator ?orcid.
+    #               ?s schema:title ?title.
+    #               ?s schema:productID ?doi.
+    #               ?s schema:publishedBy ?publisher.
+    #               ?s schema:isPartOf ?publication_venue.
+    #               ?s schema:datePublished ?publication_year.
+    #               ?s rdf:type ?type.
+    #               ?s schema:issueNumber ?issue.
+    #               ?s schema:volumeNumber ?volume.
+    #               ?s schema:Chapter ?chapter.
+    #               ?s schema:citation ?cite
+    #             }
+    #             GROUP BY ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?issue ?volume ?chapter ?type
+    #             ORDER BY DESC(?MostCited)
+    #         """
+    #     df_sparql = get(self.endpointUrl, qry, True)
+    #     return df_sparql
+
+
     def getMostCitedPublication(self):
         qry = """
                 PREFIX schema: <https://schema.org/>
-                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-                SELECT ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?issue ?volume ?chapter ?type (COUNT(?cite) as ?MostCited)
-                WHERE {
-                {
-                SELECT ?orcid ?given ?family
-                    WHERE{
-                         ?x schema:creator ?orcid.
-                         ?x schema:givenName ?given.
-                         ?x schema:familyName ?family
+                SELECT ?doi
+                WHERE{ 
+                      ?s schema:productID ?doi.
+
                     }
-                }           
-                  ?s schema:creator ?orcid.
-                  ?s schema:title ?title.
-                  ?s schema:productID ?doi.
-                  ?s schema:publishedBy ?publisher.
-                  ?s schema:isPartOf ?publication_venue.
-                  ?s schema:datePublished ?publication_year.
-                  ?s rdf:type ?type.
-                  ?s schema:issueNumber ?issue.
-                  ?s schema:volumeNumber ?volume.
-                  ?s schema:Chapter ?chapter.
-                  ?s schema:citation ?cite
-                }
-                GROUP BY ?orcid ?given ?family ?title ?doi ?publication_venue ?publisher ?publication_year ?issue ?volume ?chapter ?type
-                ORDER BY DESC(?MostCited)
-                LIMIT 1
             """
         df_sparql = get(self.endpointUrl, qry, True)
-        return df_sparql
+        df_nuovo = DataFrame()
+        for row_idx, row in df_sparql.iterrows():
+            query = """
+                PREFIX schema: <https://schema.org/>
+                SELECT ?doi ?doi_mention
+                WHERE{ 
+                      ?s schema:citation ?doi_mention.
+                      ?s schema:productID ?doi.
+                      ?s schema:productID'""" + str(row["doi"]) + """'
+                    }
+                """
+            df_nuovo = pd.concat([df_nuovo, get(self.endpointUrl, query, True)])
+        end_df = pd.concat([df_sparql, df_nuovo])
+        return end_df
+
+
 
     def getMostCitedVenue(self):
         qry = """
-            PREFIX schema: <https://schema.org/>
-            SELECT ?publication_venue ?venue_id ?publisher ?title ?venue_type ?event (COUNT(?cite) as ?MostCited)
+        PREFIX schema: <https://schema.org/>
+        SELECT ?doi ?doi_mention ?id_no ?title ?venue_id ?publisher ?name ?venue_type ?event
+        WHERE {
+            ?x schema:identifier ?publisher.
+            ?x schema:name ?name
+            {SELECT ?doi ?title ?publisher ?venue_id ?venue_type ?event ?doi_mention
             WHERE {
-              ?s schema:isPartOf ?publication_venue.
-              ?s schema:title ?title.
-              ?s schema:publishedBy ?publisher.
-              ?s schema:VirtualLocation ?venue_id.
-              ?s schema:additionalType ?venue_type.
-              ?s schema:Event ?event.
-              ?s schema:citation ?cite
+             ?s schema:productID ?doi.
+             ?s schema:isPartOf ?title.
+             ?s schema:publishedBy ?publisher.
+             ?s schema:VirtualLocation ?venue_id.
+             ?s schema:additionalType ?venue_type.
+             ?s schema:Event ?event.
+             ?s schema:citation ?doi_mention
+                }    
             }
-            GROUP BY ?publication_venue ?venue_id ?title ?publisher ?venue_type ?event
-            ORDER BY DESC(?MostCited)
-            LIMIT 1
+        }
         """
         df_sparql = get(self.endpointUrl, qry, True)
-        return df_sparql
+        output = df_sparql.rename(columns={"id_no": "id_no."})
+        return output
+
+    # qry = """
+    #     PREFIX schema: <https://schema.org/>
+    #     SELECT ?publication_venue ?venue_id ?publisher ?title ?venue_type ?event (COUNT(?cite) as ?MostCited)
+    #     WHERE {
+    #       ?s schema:isPartOf ?publication_venue.
+    #       ?s schema:title ?title.
+    #       ?s schema:publishedBy ?publisher.
+    #       ?s schema:VirtualLocation ?venue_id.
+    #       ?s schema:additionalType ?venue_type.
+    #       ?s schema:Event ?event.
+    #       ?s schema:citation ?cite
+    #     }
+    #     GROUP BY ?publication_venue ?venue_id ?title ?publisher ?venue_type ?event
+    #     ORDER BY DESC(?MostCited)
+    #     LIMIT 1
+    # """
+
 
     def getVenuesByPublisherId(self, id):
         qry = """
             PREFIX schema: <https://schema.org/>
-            SELECT ?publication_venue ?venue_id ?id ?name ?venue_type ?event
-            WHERE{
-           {SELECT ?name ?id
-            WHERE {
-                ?x schema:name ?name.
-                ?x schema:identifier ?id.
-                ?x schema:identifier '""" + str(id) + """'
-            }
-           }
-           ?s schema:isPartOf ?publication_venue.
-           ?s schema:VirtualLocation ?venue_id.
-           ?s schema:additionalType ?venue_type.
-           ?s schema:Event ?event
+                SELECT ?publication_venue ?venue_id ?id ?name ?venue_type ?event
+                WHERE{
 
-            }
+                {SELECT ?name ?id 
+                        WHERE {
+                        ?x schema:name ?name.
+                        ?x schema:identifier ?id.
+                        ?x schema:identifier '""" + str(id) + """'.
+                        }
+                }
+                ?s schema:publishedBy '""" + str(id) + """'.
+                ?s schema:isPartOf ?publication_venue.
+                ?s schema:VirtualLocation ?venue_id.
+                ?s schema:additionalType ?venue_type.
+                ?s schema:Event ?event
+
+                }
         """
         df_sparql = get(self.endpointUrl, qry, True)
         return df_sparql
@@ -490,6 +542,67 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
         df_sparql = get(self.endpointUrl, qry, True)
         return df_sparql
 
+    def getPubInfo(self, publicationId):
+        qry = """
+                    PREFIX schema: <https://schema.org/>
+                    SELECT ?doi ?orcid ?given ?family ?title ?publication_venue ?publisher ?publication_year ?issue ?volume ?chapter ?type
+                    WHERE{ 
+                      {SELECT ?title ?publication_venue ?publication_year ?publisher ?orcid ?doi ?issue ?volume ?chapter ?type
+                       WHERE{ 
+                         {SELECT ?doi
+                          WHERE{
+                               ?y schema:productID ?doi.
+                               ?y schema:productID '""" + str(publicationId) + """'
+                            }
+                         }
+                             ?x schema:productID ?doi.
+                             ?x schema:title ?title.
+                             ?x rdf:type ?type.
+                             ?x schema:issueNumber ?issue.
+                             ?x schema:volumeNumber ?volume.
+                             ?x schema:Chapter ?chapter.
+                             ?x schema:isPartOf ?publication_venue.
+                             ?x schema:datePublished ?publication_year.
+                             ?x schema:publishedBy ?publisher.
+                             ?x schema:creator ?orcid
+                            }
+
+                        }
+                        ?x schema:creator ?orcid.
+                        ?x schema:givenName ?given.
+                        ?x schema:familyName ?family
+                    }          
+                    """
+        df_sparql = get(self.endpointUrl, qry, True)
+        return df_sparql
+
+    # def getOnlyCite(self, publicationId):
+    #     qry = """
+    #         PREFIX schema: <https://schema.org/>
+    #         SELECT ?doi ?cite
+    #         WHERE{
+    #               ?s schema:citation ?cite.
+    #               ?s schema:productID ?doi.
+    #               ?s schema:productID  '""" + str(publicationId) + """'
+    #             }
+    #         """
+    #     df_sparql = get(self.endpointUrl, qry, True)
+    #     print(df_sparql)
+    #     return df_sparql
+
+    # def getAllDoi(self):
+    #     qry = """
+    #         PREFIX schema: <https://schema.org/>
+    #         SELECT ?doi
+    #         WHERE{
+    #               ?s schema:productID ?doi.
+    #
+    #             }
+    #         """
+    #     df_sparql = get(self.endpointUrl, qry, True)
+    #     print(df_sparql)
+    #     return df_sparql
+
     def getVenueByPublicationId(self, doi):
         qry = """
             PREFIX schema: <https://schema.org/>
@@ -521,10 +634,10 @@ class TriplestoreQueryProcessor(TriplestoreProcessor):
 # graph1 = TriplestoreProcessor()
 # graph2 = TriplestoreDataProcessor()
 # graph2.setEndpointUrl("http://127.0.0.1:9999/blazegraph/sparql")
-# # print(graph2.uploadData("data/graph_publications.csv"))
-# # print(graph2.uploadData("data/graph_other_data.json"))
+# print(graph2.uploadData("data/graph_publications.csv"))
+# print(graph2.uploadData("data/graph_other_data.json"))
 # trp_qp = TriplestoreQueryProcessor()
 # trp_qp.setEndpointUrl("http://127.0.0.1:9999/blazegraph/sparql")
-# ciao = trp_qp.getPublicationsPublishedInYear("2020")
+# trp_qp.getMostCitedPublication()
 # print(ciao)
 

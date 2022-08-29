@@ -1,8 +1,15 @@
 class IdentifiableEntity:
     def __init__(self, identifier):
+        if type(identifier) == list:
+            myList = []
+            for el in identifier:
+                myList.append(el)
+            self.identifier = myList
         self.identifier = identifier
 
     def getIds(self):
+        if type(self.identifier) == list:
+            return self.identifier
         my_list = list()
         my_list.append(self.identifier)
         return my_list

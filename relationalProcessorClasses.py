@@ -2,6 +2,8 @@ from sqlite3 import connect
 from pandas import read_csv, read_sql, DataFrame
 from json import load
 import pandas as pd
+from dataModelClasses import *
+
 
 
 class RelationalProcessor:
@@ -193,39 +195,35 @@ class RelationalQueryProcessor(RelationalProcessor):
     # getPublicationsByAuthorId: It returns a data frame with all the publications (i.e. the rows) that have been
     # authored by the person having the identifier specified as input (e.g. "0000-0001-9857-1511").
 
+    
     def getMostCitedPublication(self):
         with connect(self.dbPath) as con:
-            query = """
-            SELECT Author.orcid, Author.given, Author.family,  Publication.title, Author.doi, Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year, JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type, MostCited
-            FROM (SELECT WorksCited."doi_mention", COUNT(WorksCited."doi_mention") as MostCited
-            FROM WorksCited
-            GROUP BY WorksCited."doi_mention"
-            ORDER BY MostCited DESC
-            LIMIT 1)
-            LEFT JOIN Publication ON Publication.doi == "doi_mention"
-            LEFT JOIN JournalArticles ON Publication.doi == JournalArticles.doi
-            LEFT JOIN BookChapter ON Publication.doi == BookChapter.doi
-            LEFT JOIN Author ON Publication.doi == Author.doi
-            LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi"""
-            freqMat = read_sql(query, con)
-        return freqMat
+            qry = """
+                SELECT doi
+                FROM Publication"""
+            df_sparql = read_sql(qry, con)
+            df_nuovo = DataFrame()
+            for row_idx, row in df_sparql.iterrows():
+                query = """ SELECT doi, doi_mention
+                FROM WorksCited
+                WHERE doi = "{0}";""".format(row["doi"])
+                df_nuovo = pd.concat([df_nuovo, read_sql(query, con)])
+            # print(df_nuovo)
+            end_df = pd.concat([df_sparql, df_nuovo])
+            return end_df
+
+
 
     # getMostCitedPublication: It returns a data frame with all the publications (i.e. the rows) that have received
     # the most number of citations by other publications.
 
     def getMostCitedVenue(self):
         with connect(self.dbPath) as con:
-            query = """ 
-            SELECT Publication.publication_venue, Venues_doi.venue_id, namedVenues_Publisher."publisher", Publication.title, namedVenues_Publisher.venue_type, event, MostCited 
-            FROM 
-                (SELECT WorksCited."doi_mention", COUNT(WorksCited."doi_mention") as MostCited
-                FROM WorksCited
-                GROUP BY WorksCited."doi_mention"
-                ORDER BY MostCited DESC
-                LIMIT 1)
-            LEFT JOIN namedVenues_Publisher ON "doi_mention" == namedVenues_Publisher.doi 
-            LEFT JOIN Venues_doi ON "doi_mention" == Venues_doi.doi
-            LEFT JOIN Publication ON "doi_mention" == Publication.doi"""
+            query = """SELECT  WorksCited.doi,  WorksCited.doi_mention, Venues_doi.'id_no.' , namedVenues_Publisher.title, Venues_doi.venue_id, namedVenues_Publisher."publisher", Publisher.name, namedVenues_Publisher.venue_type, event
+            FROM WorksCited
+            LEFT JOIN Venues_doi ON WorksCited.doi_mention == Venues_doi.doi
+            LEFT JOIN namedVenues_Publisher ON WorksCited.doi_mention == namedVenues_Publisher.doi
+            LEFT JOIN Publisher ON  Publisher.id == namedVenues_Publisher.'publisher'"""
             df_sql = read_sql(query, con)
             return df_sql
 
@@ -403,6 +401,19 @@ class RelationalQueryProcessor(RelationalProcessor):
             authorId = read_sql(query, con)
             return authorId
 
+    def getPubInfo(self, publicationID):
+        with connect(self.dbPath) as con:
+            query = """ SELECT Author.doi, Author.orcid, Author.given, Author.family,  Publication.title,  
+                            Publication.publication_venue, namedVenues_Publisher."publisher", Publication.publication_year,
+                                JournalArticles.issue, JournalArticles.volume, BookChapter.chapter, Publication.type
+                                FROM Publication
+                                LEFT JOIN JournalArticles ON Publication.doi == JournalArticles.doi
+                                LEFT JOIN BookChapter ON Publication.doi == BookChapter.doi
+                                LEFT JOIN Author ON Publication.doi == Author.doi
+                                LEFT JOIN namedVenues_Publisher ON namedVenues_Publisher.doi == Publication.doi
+                                WHERE Publication.doi = '{0}';""".format(publicationID)
+        df_sql = read_sql(query, con)
+        return df_sql
 
 # setting the environment for testing based on our dataset
 
@@ -420,7 +431,7 @@ class RelationalQueryProcessor(RelationalProcessor):
 # print("-----------------")
 # print("3) getMostCitedPublication:\n", rel_qp.getMostCitedPublication())
 # print("-----------------")
-# print("4) getMostCitedVenue:\n", rel_qp.getMostCitedVenue())
+#print("4) getMostCitedVenue:\n", rel_qp.getMostCitedVenue())
 # print("-----------------")
 # print("5) getVenuesByPublisherId:\n", rel_qp.getVenuesByPublisherId("crossref:78"))
 # print("-----------------")

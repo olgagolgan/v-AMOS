@@ -56,10 +56,9 @@ class GenericQueryProcessor:
                                 int(chapter))
         elif (type == "proceedings-paper"):
             pub = ProceedingsPaper(doi, int(publicationYear), title, cites_list, authors,
-                                        publicationVenue, issue, volume)
+                                        publicationVenue)
         else:
             pub = Publication(doi, int(publicationYear), title, cites_list, authors, publicationVenue)
-        pub
         return pub
     
     def checkTypeVenue(self, v_type, identifier, title, publishers, event):
@@ -148,14 +147,7 @@ class GenericQueryProcessor:
         venue_type = df_union_no_dupl.iloc[0]["venue_type"]
         event = df_union_no_dupl.iloc[0]["event"]
         publishers = self.getPublishers(publisher)
-        if (venue_type == "journal"):
-            venue = Journal(identifier, title, publishers)
-        elif (venue_type == "book"):
-            venue = Book(identifier, title, publishers)
-        elif (venue_type == "proceedings"):
-            venue = Proceedings(identifier, title, publishers, event)
-        else:
-            venue = Venue(identifier, title, publishers)
+        venue = self.checkTypeVenue(venue_type, identifier, title, publishers, event)
         return venue
 
 
@@ -250,7 +242,7 @@ class GenericQueryProcessor:
             venue_type = row["venue_type"]
             publishers = Organization(row["publisher"], row["name"])
             venue = self.checkTypeVenue(venue_type, identifier, title, publishers, event)      
-        return venue
+            return venue
 
 
     def getVenuesByPublisherId(self, publisherID):
@@ -453,25 +445,25 @@ class GenericQueryProcessor:
 # setting the environment for testing, the commands have been commented in order to allow the user to set them freely
 
 
-triple_uri = "http://127.0.0.1:9999/blazegraph/sparql"
-trp_dp = TriplestoreDataProcessor()
-trp_dp.setEndpointUrl(triple_uri)
-# print(trp_dp.uploadData("data/graph_publications2.csv"))
-# print(trp_dp.uploadData("data/graph_other_data2.json"))
-trp_qp = TriplestoreQueryProcessor()
-trp_qp.setEndpointUrl(triple_uri)
+# triple_uri = "http://127.0.0.1:9999/blazegraph/sparql"
+# trp_dp = TriplestoreDataProcessor()
+# trp_dp.setEndpointUrl(triple_uri)
+# print(trp_dp.uploadData("data/graph_publications.csv"))
+# print(trp_dp.uploadData("data/graph_other_data.json"))
+# trp_qp = TriplestoreQueryProcessor()
+# trp_qp.setEndpointUrl(triple_uri)
 
-rel_path = "tester.db"
-rel_dp = RelationalDataProcessor()
-rel_dp.setDbPath(rel_path)
-# print(rel_dp.uploadData("data/relational_publications2.csv"))
-# print(rel_dp.uploadData("data/relationalJSON2.json"))
-rel_qp = RelationalQueryProcessor()
-rel_qp.setDbPath(rel_path)
+# rel_path = "tester.db"
+# rel_dp = RelationalDataProcessor()
+# rel_dp.setDbPath(rel_path)
+# print(rel_dp.uploadData("data/relational_publications.csv"))
+# print(rel_dp.uploadData("data/relationalJSON.json"))
+# rel_qp = RelationalQueryProcessor()
+# rel_qp.setDbPath(rel_path)
 
-generic = GenericQueryProcessor()
-generic.addQueryProcessor(trp_qp)
-generic.addQueryProcessor(rel_qp)
+# generic = GenericQueryProcessor()
+# generic.addQueryProcessor(trp_qp)
+# generic.addQueryProcessor(rel_qp)
 
 
 
